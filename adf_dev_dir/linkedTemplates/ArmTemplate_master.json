@@ -1,0 +1,91 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "type": "string",
+            "metadata": "Data Factory name",
+            "defaultValue": "RettaADF"
+        },
+        "AzureDataLakeStorage1_accountKey": {
+            "type": "secureString",
+            "metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
+        },
+        "AzureDatabricksDeltaLake1_accessToken": {
+            "type": "secureString",
+            "metadata": "Secure string for 'accessToken' of 'AzureDatabricksDeltaLake1'"
+        },
+        "RettaDBrcks_accessToken": {
+            "type": "secureString",
+            "metadata": "Secure string for 'accessToken' of 'RettaDBrcks'"
+        },
+        "AzureDataLakeStorage1_properties_typeProperties_url": {
+            "type": "string",
+            "defaultValue": "https://rettadatalake.dfs.core.windows.net/"
+        },
+        "MetryAPI_properties_typeProperties_url": {
+            "type": "string",
+            "defaultValue": "https://app.metry.io/api/v2/meters?access_token=722090723400a9181120f957636348769bae76b0cef705721e3884217ec8"
+        },
+        "AzureKeyVaultRetta_properties_typeProperties_baseUrl": {
+            "type": "string",
+            "defaultValue": "https://rettakvault.vault.azure.net/"
+        },
+        "energy_hrly_properties_typeProperties_url": {
+            "type": "string",
+            "defaultValue": "https://app.metry.io/api/v2/streams/62bd9c2aacea0e68c708393c/consume?access_token=722090723400a9181120f957636348769bae76b0cef705721e3884217ec8"
+        },
+        "containerUri": {
+            "type": "string",
+            "metadata": "URI to storage account containing linked ARM templates"
+        },
+        "containerSasToken": {
+            "type": "string",
+            "metadata": "Sas token to storage account containing linked ARM templates"
+        }
+    },
+    "variables": {
+        "factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+    },
+    "resources": [
+        {
+            "name": "RettaADF_ArmTemplate_0",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2018-02-01",
+            "properties": {
+                "mode": "incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "factoryName": {
+                        "value": "[parameters('factoryName')]"
+                    },
+                    "AzureDataLakeStorage1_accountKey": {
+                        "value": "[parameters('AzureDataLakeStorage1_accountKey')]"
+                    },
+                    "AzureDatabricksDeltaLake1_accessToken": {
+                        "value": "[parameters('AzureDatabricksDeltaLake1_accessToken')]"
+                    },
+                    "RettaDBrcks_accessToken": {
+                        "value": "[parameters('RettaDBrcks_accessToken')]"
+                    },
+                    "AzureDataLakeStorage1_properties_typeProperties_url": {
+                        "value": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]"
+                    },
+                    "MetryAPI_properties_typeProperties_url": {
+                        "value": "[parameters('MetryAPI_properties_typeProperties_url')]"
+                    },
+                    "AzureKeyVaultRetta_properties_typeProperties_baseUrl": {
+                        "value": "[parameters('AzureKeyVaultRetta_properties_typeProperties_baseUrl')]"
+                    },
+                    "energy_hrly_properties_typeProperties_url": {
+                        "value": "[parameters('energy_hrly_properties_typeProperties_url')]"
+                    }
+                }
+            },
+            "dependsOn": []
+        }
+    ]
+}
