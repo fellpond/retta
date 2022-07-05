@@ -1,0 +1,36 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "RettaADF"
+		},
+		"AzureDataLakeStorage1_accountKey": {
+			"value": ""
+		},
+		"AzureDatabricksDeltaLake1_accessToken": {
+			"value": ""
+		},
+		"RettaDBrcks_accessToken": {
+			"value": ""
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"value": "https://rettadatalake.dfs.core.windows.net/"
+		},
+		"AzureKeyVaultRetta_properties_typeProperties_baseUrl": {
+			"value": "https://rettakvault.vault.azure.net/"
+		},
+		"MetryAPI_properties_typeProperties_url": {
+			"value": "https://app.metry.io/api/v2/meters?access_token=722090723400a9181120f957636348769bae76b0cef705721e3884217ec8"
+		},
+		"energy_hrly_properties_typeProperties_url": {
+			"value": "https://app.metry.io/api/v2/streams/62bd9c2aacea0e68c708393c/consume?access_token=722090723400a9181120f957636348769bae76b0cef705721e3884217ec8"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
