@@ -1,0 +1,9 @@
+{
+	"name": "RettaADF",
+	"location": "northeurope",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "f407fe54-ff69-4520-88b0-883beb485df2",
+		"tenantId": "73c16815-3240-4d1b-a812-2ad40bdd06fb"
+	}
+}
