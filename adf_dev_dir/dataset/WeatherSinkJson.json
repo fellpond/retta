@@ -11,7 +11,7 @@
 			"location": {
 				"type": "AzureBlobStorageLocation",
 				"fileName": {
-					"value": "@concat('weather_inbound',formatDatetime(utcnow(),'MMddyyyhh'),'.json')",
+					"value": "@concat('weather_inbound_',formatDatetime(utcnow(),'MMddyyyhh'),'.json')",
 					"type": "Expression"
 				},
 				"folderPath": "inbound",
