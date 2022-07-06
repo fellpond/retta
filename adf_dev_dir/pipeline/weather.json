@@ -21,7 +21,7 @@
 							{
 								"name": "WeatherCaptureTime",
 								"value": {
-									"value": "@formatDatetime(utcnow(),'dd-MM-yyy')",
+									"value": "@formatDatetime(utcnow(),'MMddyyyhh')",
 									"type": "Expression"
 								}
 							}
