@@ -1,0 +1,20 @@
+{
+	"name": "WeatherSinkJson",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WeatherBlobStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "weather_inbound",
+				"folderPath": "inbound",
+				"container": "weather-raw"
+			}
+		},
+		"schema": {}
+	}
+}
