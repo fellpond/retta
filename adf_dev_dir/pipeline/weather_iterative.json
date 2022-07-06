@@ -7,7 +7,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "Lookup1",
+						"activity": "ForEach1",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -53,8 +53,14 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "WeatherDS",
-						"type": "DatasetReference"
+						"referenceName": "WeatherDSParam",
+						"type": "DatasetReference",
+						"parameters": {
+							"location_keyds_param": {
+								"value": "@activity('Lookup1').output",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"outputs": [
@@ -81,7 +87,7 @@
 						"type": "DelimitedTextSource",
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
-							"recursive": true,
+							"recursive": false,
 							"enablePartitionDiscovery": false
 						},
 						"formatSettings": {
@@ -91,6 +97,26 @@
 					"dataset": {
 						"referenceName": "WeatherLocationDS",
 						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup1').output",
+						"type": "Expression"
 					}
 				}
 			}
