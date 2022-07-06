@@ -21,7 +21,7 @@
 							{
 								"name": "WeatherCaptureTime",
 								"value": {
-									"value": "@formatDateTime('yyyyMMDDHH')",
+									"value": "@formatDateTime('dd-MM-yy')",
 									"type": "Expression"
 								}
 							}
