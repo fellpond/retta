@@ -10,7 +10,10 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"fileName": "weather_inbound",
+				"fileName": {
+					"value": "@concat('weather_inbound',formatDatetime(utcnow(),'MMddyyyhh'),'.json')",
+					"type": "Expression"
+				},
 				"folderPath": "inbound",
 				"container": "weather-raw"
 			}
