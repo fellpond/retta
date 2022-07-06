@@ -5,6 +5,11 @@
 			"referenceName": "WeatherAPIParam",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"location_keyds_param": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "RestResource",
 		"schema": []
