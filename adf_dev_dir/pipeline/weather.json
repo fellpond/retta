@@ -21,7 +21,7 @@
 							{
 								"name": "WeatherCaptureTime",
 								"value": {
-									"value": "@formatDatetime(utcnow(),'MMddyyyhh')",
+									"value": "@concat('weather_inbound',formatDatetime(utcnow(),'MMddyyyhh'),'.json')",
 									"type": "Expression"
 								}
 							}
