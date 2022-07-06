@@ -12,6 +12,12 @@
 		},
 		"annotations": [],
 		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat('http://dataservice.accuweather.com/currentconditions/v1/',dataset().location_keyds_param,'?apikey=8DUFt2aT98g8GAPZmTfIZ8srP9Ezj6Gy&details=true')",
+				"type": "Expression"
+			}
+		},
 		"schema": []
 	}
 }
