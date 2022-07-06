@@ -54,13 +54,7 @@
 				"inputs": [
 					{
 						"referenceName": "WeatherDSParam",
-						"type": "DatasetReference",
-						"parameters": {
-							"location_keyds_param": {
-								"value": "@activity('Lookup1').output",
-								"type": "Expression"
-							}
-						}
+						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
