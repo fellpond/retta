@@ -1,0 +1,17 @@
+{
+	"name": "WeatherAPIParam",
+	"properties": {
+		"parameters": {
+			"location_key_param": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "@concat('http://dataservice.accuweather.com/currentconditions/v1/',linkedService().location_key_param,'?apikey=8DUFt2aT98g8GAPZmTfIZ8srP9Ezj6Gy&details=true')",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		}
+	}
+}
