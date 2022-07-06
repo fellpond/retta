@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Copy data1",
+				"name": "Weather_Ingestion",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -21,7 +21,7 @@
 							{
 								"name": "WeatherCaptureTime",
 								"value": {
-									"value": "@utcnow()",
+									"value": "@formatDatetime(utcnow(),'dd-MM-yyy')",
 									"type": "Expression"
 								}
 							}
