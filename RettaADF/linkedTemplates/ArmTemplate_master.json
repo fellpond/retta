@@ -19,6 +19,14 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accessToken' of 'RettaDBrcks'"
 		},
+		"WeatherBlobStorage_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'WeatherBlobStorage'"
+		},
+		"blob_Weather_Location_Config_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'blob_Weather_Location_Config'"
+		},
 		"AzureDataLakeStorage1_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://rettadatalake.dfs.core.windows.net/"
@@ -30,6 +38,10 @@
 		"MetryAPI_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://app.metry.io/api/v2/meters?access_token=722090723400a9181120f957636348769bae76b0cef705721e3884217ec8"
+		},
+		"WeatherAPI_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "http://dataservice.accuweather.com/currentconditions/v1/133022?apikey=8DUFt2aT98g8GAPZmTfIZ8srP9Ezj6Gy&details=true"
 		},
 		"energy_hrly_properties_typeProperties_url": {
 			"type": "string",
@@ -71,6 +83,12 @@
 					"RettaDBrcks_accessToken": {
 						"value": "[parameters('RettaDBrcks_accessToken')]"
 					},
+					"WeatherBlobStorage_connectionString": {
+						"value": "[parameters('WeatherBlobStorage_connectionString')]"
+					},
+					"blob_Weather_Location_Config_connectionString": {
+						"value": "[parameters('blob_Weather_Location_Config_connectionString')]"
+					},
 					"AzureDataLakeStorage1_properties_typeProperties_url": {
 						"value": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]"
 					},
@@ -80,12 +98,35 @@
 					"MetryAPI_properties_typeProperties_url": {
 						"value": "[parameters('MetryAPI_properties_typeProperties_url')]"
 					},
+					"WeatherAPI_properties_typeProperties_url": {
+						"value": "[parameters('WeatherAPI_properties_typeProperties_url')]"
+					},
 					"energy_hrly_properties_typeProperties_url": {
 						"value": "[parameters('energy_hrly_properties_typeProperties_url')]"
 					}
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "RettaADF_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'RettaADF_ArmTemplate_0')]"
+			]
 		}
 	]
 }
