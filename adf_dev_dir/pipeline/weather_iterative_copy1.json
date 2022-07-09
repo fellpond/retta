@@ -90,7 +90,7 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"location_keyds_param": {
-											"value": "@item()",
+											"value": "@split(item().name,'%')[4]",
 											"type": "Expression"
 										}
 									}
