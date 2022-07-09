@@ -71,7 +71,7 @@
 									"additionalColumns": [
 										{
 											"name": "location_key",
-											"value": "@item().Prop_0"
+											"value": "133026"
 										}
 									],
 									"httpRequestTimeout": "00:01:40",
