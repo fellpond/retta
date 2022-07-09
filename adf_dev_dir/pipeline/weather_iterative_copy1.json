@@ -51,6 +51,7 @@
 						"value": "@activity('Loc_Lookup').output.value",
 						"type": "Expression"
 					},
+					"isSequential": true,
 					"activities": [
 						{
 							"name": "Weather_CAP",
