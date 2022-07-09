@@ -91,7 +91,7 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"location_keyds_param": {
-											"value": "@item()",
+											"value": "@item().Prop_0",
 											"type": "Expression"
 										}
 									}
