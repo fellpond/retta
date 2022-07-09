@@ -14,9 +14,9 @@
 				"folderPath": "config",
 				"container": "weather-raw"
 			},
-			"columnDelimiter": ",",
+			"columnDelimiter": "\t",
 			"escapeChar": "\\",
-			"firstRowAsHeader": true,
+			"firstRowAsHeader": false,
 			"quoteChar": "\""
 		},
 		"schema": []
