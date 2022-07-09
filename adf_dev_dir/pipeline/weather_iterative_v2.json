@@ -1,5 +1,5 @@
 {
-	"name": "weather_iterative_copy1",
+	"name": "weather_iterative_v2",
 	"properties": {
 		"activities": [
 			{
@@ -71,7 +71,7 @@
 									"additionalColumns": [
 										{
 											"name": "location_key",
-											"value": "133027"
+											"value": "133026"
 										}
 									],
 									"httpRequestTimeout": "00:01:40",
