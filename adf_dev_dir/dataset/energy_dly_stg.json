@@ -14,8 +14,8 @@
 					"value": "@concat('energy_dly_',utcnow('yyyyMMdd'))",
 					"type": "Expression"
 				},
-				"folderPath": "energy_dly_data",
-				"fileSystem": "energyraw"
+				"folderPath": "input",
+				"fileSystem": "energydlyin"
 			}
 		},
 		"schema": {}
