@@ -1,0 +1,20 @@
+{
+	"name": "energy_dly_archive",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "@concat('energy_dly_',utcnow('yyyyMMdd'))",
+				"folderPath": "Archive",
+				"fileSystem": "energydlyin"
+			}
+		},
+		"schema": {}
+	}
+}
