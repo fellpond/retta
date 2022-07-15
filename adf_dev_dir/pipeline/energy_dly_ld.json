@@ -49,28 +49,8 @@
 				]
 			},
 			{
-				"name": "databricks",
+				"name": "Parse InputJson",
 				"type": "DatabricksNotebook",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"notebookPath": "/Users/prayank.sharma@routadigital.com/enrgy_etl"
-				},
-				"linkedServiceName": {
-					"referenceName": "RettaDBrcks",
-					"type": "LinkedServiceReference"
-				}
-			},
-			{
-				"name": "archive",
-				"type": "Copy",
 				"dependsOn": [
 					{
 						"activity": "copy_enrgy_dly",
@@ -88,25 +68,39 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"source": {
-						"type": "JsonSource",
-						"storeSettings": {
-							"type": "AzureBlobFSReadSettings",
-							"recursive": true,
-							"enablePartitionDiscovery": false
-						},
-						"formatSettings": {
-							"type": "JsonReadSettings"
-						}
-					},
-					"enableStaging": false
+					"notebookPath": "/Users/prayank.sharma@routadigital.com/enrgyDly_parser_adf"
 				},
-				"inputs": [
+				"linkedServiceName": {
+					"referenceName": "RettaDBrcks",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "transformation",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
 					{
-						"referenceName": "energy_dly_stg",
-						"type": "DatasetReference"
+						"activity": "Parse InputJson",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
-				]
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/prayank.sharma@routadigital.com/energy_dly_transformation"
+				},
+				"linkedServiceName": {
+					"referenceName": "RettaDBrcks",
+					"type": "LinkedServiceReference"
+				}
 			}
 		],
 		"annotations": [],
