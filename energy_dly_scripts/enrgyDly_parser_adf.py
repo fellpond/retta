@@ -1,8 +1,4 @@
 # Databricks notebook source
-# MAGIC %run ./Mount_ADLS
-
-# COMMAND ----------
-
 def readJson(path):
     try:
         df = spark.read.json(path)
@@ -11,11 +7,7 @@ def readJson(path):
         raise Exception("No file present")
 
     
-    
-def archiveProcess(inpath, archive):
-    fileList = dbutils.fs.ls(inpath)
-    for i in fileList:
-        dbutils.fs.mv(i[0], archive )
+
 
 # COMMAND ----------
 
@@ -67,12 +59,7 @@ df = df.withColumn('dly_sum',F.round(df['dly_sum'].cast(DoubleType()),2))\
         .withColumn('dly_end_dt', F.to_date(df['dly_end_dt'].cast('string'), 'yyyyMMdd'))\
 
 df.persist()
-
-df.write.mode("overwrite").format("delta").saveAsTable('retta.energy_dly_stg')
-
-
-
-# COMMAND ----------
+tpath = '/mnt/energydlystg/energy_dly_stg'
+df.write.mode("overwrite").format("delta").option('path', tpath).saveAsTable('energy_dly_stg2')
 
 
-archiveProcess('/mnt/energy_dly_in/input/','/mnt/energy_dly_in/Archive/')

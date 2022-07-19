@@ -33,7 +33,3 @@ df_ref = df_union.withColumn('rank', F.rank().over(Window.partitionBy('ean').ord
 
 df_final.write.format('Delta').mode('append').saveAsTable('retta.energy_daily_tgt_stg')
 df_ref.write.format('Delta').mode('overwrite').saveAsTable('retta.energy_dly_ref')
-
-# COMMAND ----------
-
-df_ref.write.format('Delta').mode('overwrite').saveAsTable('retta.energy_dly_ref')
