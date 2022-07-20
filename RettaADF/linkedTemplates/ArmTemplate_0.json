@@ -11,13 +11,9 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
 		},
-		"AzureDatabricksDeltaLake1_accessToken": {
+		"AzureFunction1_functionKey": {
 			"type": "secureString",
-			"metadata": "Secure string for 'accessToken' of 'AzureDatabricksDeltaLake1'"
-		},
-		"RettaDBrcks_accessToken": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accessToken' of 'RettaDBrcks'"
+			"metadata": "Secure string for 'functionKey' of 'AzureFunction1'"
 		},
 		"WeatherBlobStorage_connectionString": {
 			"type": "secureString",
@@ -31,6 +27,10 @@
 			"type": "string",
 			"defaultValue": "https://rettadatalake.dfs.core.windows.net/"
 		},
+		"AzureFunction1_properties_typeProperties_functionAppUrl": {
+			"type": "string",
+			"defaultValue": "https://rettaapi.azurewebsites.net"
+		},
 		"AzureKeyVaultRetta_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://rettakvault.vault.azure.net/"
@@ -42,6 +42,10 @@
 		"WeatherAPI_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "http://dataservice.accuweather.com/currentconditions/v1/133022?apikey=8DUFt2aT98g8GAPZmTfIZ8srP9Ezj6Gy&details=true"
+		},
+		"WeatherAPIParam_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "@concat('http://dataservice.accuweather.com/currentconditions/v1/',linkedService().location_key_param,'?apikey=8DUFt2aT98g8GAPZmTfIZ8srP9Ezj6Gy&details=true')"
 		},
 		"energy_hrly_properties_typeProperties_url": {
 			"type": "string",
@@ -70,19 +74,19 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/AzureDatabricksDeltaLake1')]",
+			"name": "[concat(parameters('factoryName'), '/AzureFunction1')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
-				"type": "AzureDatabricksDeltaLake",
+				"type": "AzureFunction",
 				"typeProperties": {
-					"domain": "https://adb-1558361433928880.0.azuredatabricks.net",
-					"clusterId": "0619-160955-oyx2izwq",
-					"accessToken": {
+					"functionAppUrl": "[parameters('AzureFunction1_properties_typeProperties_functionAppUrl')]",
+					"functionKey": {
 						"type": "SecureString",
-						"value": "[parameters('AzureDatabricksDeltaLake1_accessToken')]"
-					}
+						"value": "[parameters('AzureFunction1_functionKey')]"
+					},
+					"authentication": "Anonymous"
 				}
 			},
 			"dependsOn": []
@@ -116,32 +120,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/RettaDBrcks')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureDatabricks",
-				"typeProperties": {
-					"domain": "https://adb-1558361433928880.0.azuredatabricks.net",
-					"accessToken": {
-						"type": "SecureString",
-						"value": "[parameters('RettaDBrcks_accessToken')]"
-					},
-					"newClusterNodeType": "Standard_DS3_v2",
-					"newClusterNumOfWorker": "0:2",
-					"newClusterSparkEnvVars": {
-						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
-					},
-					"newClusterVersion": "10.3.x-scala2.12",
-					"newClusterInitScripts": [],
-					"newClusterDriverNodeType": "Standard_DS3_v2",
-					"clusterOption": "Autoscaling"
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/WeatherAPI')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -150,6 +128,26 @@
 				"type": "RestService",
 				"typeProperties": {
 					"url": "[parameters('WeatherAPI_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WeatherAPIParam')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"location_key_param": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('WeatherAPIParam_properties_typeProperties_url')]",
 					"enableServerCertificateValidation": true,
 					"authenticationType": "Anonymous"
 				}
@@ -208,44 +206,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/databricks_intg')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "databricks",
-						"type": "DatabricksNotebook",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"notebookPath": "/Users/prayank.sharma@routadigital.com/enrgy_etl"
-						},
-						"linkedServiceName": {
-							"referenceName": "RettaDBrcks",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": [],
-				"lastPublishTime": "2022-07-05T07:30:29Z"
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/RettaDBrcks')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/WeatherDS')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -261,6 +221,35 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/WeatherAPI')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WeatherDSParam')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WeatherAPIParam",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"location_key_param": {
+							"value": "@dataset().location_keyds_param",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"location_keyds_param": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WeatherAPIParam')]"
 			]
 		},
 		{
@@ -281,8 +270,9 @@
 						"folderPath": "config",
 						"container": "weather-raw"
 					},
-					"columnDelimiter": ",",
+					"columnDelimiter": "\t",
 					"escapeChar": "\\",
+					"firstRowAsHeader": false,
 					"quoteChar": "\""
 				},
 				"schema": []
@@ -340,6 +330,62 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/energy_dly_archive')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@concat('energy_dly_',utcnow('yyyyMMdd'))",
+							"type": "Expression"
+						},
+						"folderPath": "Archive",
+						"fileSystem": "energydlyin"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/energy_dly_mnthly')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@concat('energy_dly_mnthly', utcnow('yyyyMMdd'))",
+							"type": "Expression"
+						},
+						"folderPath": "energy_dly_mnthly/input",
+						"fileSystem": "bronze"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/energy_dly_stg')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -357,8 +403,8 @@
 							"value": "@concat('energy_dly_',utcnow('yyyyMMdd'))",
 							"type": "Expression"
 						},
-						"folderPath": "energy_dly_data",
-						"fileSystem": "energyraw"
+						"folderPath": "input",
+						"fileSystem": "energydlyin"
 					}
 				},
 				"schema": {}
@@ -413,199 +459,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/energy_dly_ld')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "copy_enrgy_dly",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "RestSource",
-								"httpRequestTimeout": "00:01:40",
-								"requestInterval": "00.00:00:00.010",
-								"requestMethod": "GET",
-								"paginationRules": {
-									"supportRFC5988": "true"
-								}
-							},
-							"sink": {
-								"type": "JsonSink",
-								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings"
-								},
-								"formatSettings": {
-									"type": "JsonWriteSettings"
-								}
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "energy_dly",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "energy_dly_stg",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					},
-					{
-						"name": "copy_enrgy_hrly",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "RestSource",
-								"httpRequestTimeout": "00:01:40",
-								"requestInterval": "00.00:00:00.010",
-								"requestMethod": "POST",
-								"requestBody": "{\n  \"offset\": null\n}",
-								"paginationRules": {
-									"supportRFC5988": "true"
-								}
-							},
-							"sink": {
-								"type": "JsonSink",
-								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings"
-								},
-								"formatSettings": {
-									"type": "JsonWriteSettings"
-								}
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "energy_hrly",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "energy_hrly_stg",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": [],
-				"lastPublishTime": "2022-07-03T19:00:11Z"
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/energy_dly')]",
-				"[concat(variables('factoryId'), '/datasets/energy_dly_stg')]",
-				"[concat(variables('factoryId'), '/datasets/energy_hrly')]",
-				"[concat(variables('factoryId'), '/datasets/energy_hrly_stg')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/weather')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Weather_Ingestion",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "RestSource",
-								"additionalColumns": [
-									{
-										"name": "WeatherCaptureTime",
-										"value": {
-											"value": "@formatDatetime(utcnow(),'MMddyyyhh')",
-											"type": "Expression"
-										}
-									}
-								],
-								"httpRequestTimeout": "00:01:40",
-								"requestInterval": "00.00:00:36.000",
-								"requestMethod": "GET",
-								"paginationRules": {
-									"supportRFC5988": "true"
-								}
-							},
-							"sink": {
-								"type": "JsonSink",
-								"storeSettings": {
-									"type": "AzureBlobStorageWriteSettings"
-								},
-								"formatSettings": {
-									"type": "JsonWriteSettings"
-								}
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "WeatherDS",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "WeatherSinkJson",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/WeatherDS')]",
-				"[concat(variables('factoryId'), '/datasets/WeatherSinkJson')]"
 			]
 		}
 	]

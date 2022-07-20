@@ -11,13 +11,9 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
 		},
-		"AzureDatabricksDeltaLake1_accessToken": {
+		"AzureFunction1_functionKey": {
 			"type": "secureString",
-			"metadata": "Secure string for 'accessToken' of 'AzureDatabricksDeltaLake1'"
-		},
-		"RettaDBrcks_accessToken": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accessToken' of 'RettaDBrcks'"
+			"metadata": "Secure string for 'functionKey' of 'AzureFunction1'"
 		},
 		"WeatherBlobStorage_connectionString": {
 			"type": "secureString",
@@ -31,6 +27,10 @@
 			"type": "string",
 			"defaultValue": "https://rettadatalake.dfs.core.windows.net/"
 		},
+		"AzureFunction1_properties_typeProperties_functionAppUrl": {
+			"type": "string",
+			"defaultValue": "https://rettaapi.azurewebsites.net"
+		},
 		"AzureKeyVaultRetta_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://rettakvault.vault.azure.net/"
@@ -43,9 +43,17 @@
 			"type": "string",
 			"defaultValue": "http://dataservice.accuweather.com/currentconditions/v1/133022?apikey=8DUFt2aT98g8GAPZmTfIZ8srP9Ezj6Gy&details=true"
 		},
+		"WeatherAPIParam_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "@concat('http://dataservice.accuweather.com/currentconditions/v1/',linkedService().location_key_param,'?apikey=8DUFt2aT98g8GAPZmTfIZ8srP9Ezj6Gy&details=true')"
+		},
 		"energy_hrly_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://app.metry.io/api/v2/streams/62bd9c2aacea0e68c708393c/consume?access_token=722090723400a9181120f957636348769bae76b0cef705721e3884217ec8"
+		},
+		"metryIntg_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://app.metry.io/api/v2/"
 		}
 	},
 	"variables": {
@@ -145,6 +153,80 @@
 						]
 					},
 					{
+						"name": "Parse InputJson",
+						"type": "DatabricksNotebook",
+						"dependsOn": [
+							{
+								"activity": "copy_enrgy_dly",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/prayank.sharma@routadigital.com/enrgyDly_parser_adf"
+						},
+						"linkedServiceName": {
+							"referenceName": "RettaDBrcks",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "transformation",
+						"type": "DatabricksNotebook",
+						"dependsOn": [
+							{
+								"activity": "Parse InputJson",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/prayank.sharma@routadigital.com/energy_dly_transformation"
+						},
+						"linkedServiceName": {
+							"referenceName": "RettaDBrcks",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-07-03T19:00:11Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/energy_dly')]",
+				"[concat(variables('factoryId'), '/datasets/energy_dly_stg')]",
+				"[concat(variables('factoryId'), '/linkedServices/RettaDBrcks')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
 						"name": "copy_enrgy_hrly",
 						"type": "Copy",
 						"dependsOn": [],
@@ -198,14 +280,113 @@
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
 				},
-				"annotations": [],
-				"lastPublishTime": "2022-07-03T19:00:11Z"
+				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/energy_dly')]",
-				"[concat(variables('factoryId'), '/datasets/energy_dly_stg')]",
 				"[concat(variables('factoryId'), '/datasets/energy_hrly')]",
 				"[concat(variables('factoryId'), '/datasets/energy_hrly_stg')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Extract daily and monthly data",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET",
+								"paginationRules": {
+									"supportRFC5988": "true"
+								}
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "metrydly",
+								"type": "DatasetReference",
+								"parameters": {
+									"endpoint": "meters"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "energy_dly_mnthly",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Parse Transform and Load",
+						"type": "DatabricksNotebook",
+						"dependsOn": [
+							{
+								"activity": "Extract daily and monthly data",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Repos/prayank.sharma@routadigital.com/retta/energy_dly_scripts/energy_dly_seq"
+						},
+						"linkedServiceName": {
+							"referenceName": "RettaDBrcks",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"test": {
+						"type": "String",
+						"defaultValue": "1"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/metrydly')]",
+				"[concat(variables('factoryId'), '/datasets/energy_dly_mnthly')]",
+				"[concat(variables('factoryId'), '/linkedServices/RettaDBrcks')]"
 			]
 		},
 		{
@@ -284,6 +465,264 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/weather_iterative')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Loc_Lookup",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": false,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "WeatherLocationDS",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEachLoc",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Loc_Lookup",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Loc_Lookup').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Weather_CAP",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:01:40",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET",
+											"paginationRules": {
+												"supportRFC5988": "true"
+											}
+										},
+										"sink": {
+											"type": "JsonSink",
+											"storeSettings": {
+												"type": "AzureBlobStorageWriteSettings"
+											},
+											"formatSettings": {
+												"type": "JsonWriteSettings"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "WeatherDSParam",
+											"type": "DatasetReference",
+											"parameters": {
+												"location_keyds_param": {
+													"value": "@split(item(),'%')[4]",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "WeatherSinkJson",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/WeatherLocationDS')]",
+				"[concat(variables('factoryId'), '/datasets/WeatherDSParam')]",
+				"[concat(variables('factoryId'), '/datasets/WeatherSinkJson')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/weather_iterative_v2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Loc_Lookup",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": false,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings",
+									"skipLineCount": 1
+								}
+							},
+							"dataset": {
+								"referenceName": "WeatherLocationDS",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEachLoc",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Loc_Lookup",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Loc_Lookup').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Weather_CAP",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"additionalColumns": [
+												{
+													"name": "location_key",
+													"value": "133026"
+												}
+											],
+											"httpRequestTimeout": "00:01:40",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET",
+											"paginationRules": {
+												"supportRFC5988": "true"
+											}
+										},
+										"sink": {
+											"type": "JsonSink",
+											"storeSettings": {
+												"type": "AzureBlobStorageWriteSettings"
+											},
+											"formatSettings": {
+												"type": "JsonWriteSettings"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "WeatherDSParam",
+											"type": "DatasetReference",
+											"parameters": {
+												"location_keyds_param": {
+													"value": "@item().Prop_0",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "WeatherSinkJson",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/WeatherLocationDS')]",
+				"[concat(variables('factoryId'), '/datasets/WeatherDSParam')]",
+				"[concat(variables('factoryId'), '/datasets/WeatherSinkJson')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/WeatherDS')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -299,6 +738,35 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/WeatherAPI')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WeatherDSParam')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WeatherAPIParam",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"location_key_param": {
+							"value": "@dataset().location_keyds_param",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"location_keyds_param": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WeatherAPIParam')]"
 			]
 		},
 		{
@@ -319,8 +787,9 @@
 						"folderPath": "config",
 						"container": "weather-raw"
 					},
-					"columnDelimiter": ",",
+					"columnDelimiter": "\t",
 					"escapeChar": "\\",
+					"firstRowAsHeader": false,
 					"quoteChar": "\""
 				},
 				"schema": []
@@ -378,6 +847,62 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/energy_dly_archive')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@concat('energy_dly_',utcnow('yyyyMMdd'))",
+							"type": "Expression"
+						},
+						"folderPath": "Archive",
+						"fileSystem": "energydlyin"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/energy_dly_mnthly')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@concat('energy_dly_mnthly', utcnow('yyyyMMdd'))",
+							"type": "Expression"
+						},
+						"folderPath": "energy_dly_mnthly/input",
+						"fileSystem": "bronze"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/energy_dly_stg')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -395,8 +920,8 @@
 							"value": "@concat('energy_dly_',utcnow('yyyyMMdd'))",
 							"type": "Expression"
 						},
-						"folderPath": "energy_dly_data",
-						"fileSystem": "energyraw"
+						"folderPath": "input",
+						"fileSystem": "energydlyin"
 					}
 				},
 				"schema": {}
@@ -454,6 +979,34 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/metrydly')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "metryIntg",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"endpoint": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@dataset().endpoint",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/metryIntg')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage1')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -471,19 +1024,19 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/AzureDatabricksDeltaLake1')]",
+			"name": "[concat(parameters('factoryName'), '/AzureFunction1')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
-				"type": "AzureDatabricksDeltaLake",
+				"type": "AzureFunction",
 				"typeProperties": {
-					"domain": "https://adb-1558361433928880.0.azuredatabricks.net",
-					"clusterId": "0619-160955-oyx2izwq",
-					"accessToken": {
+					"functionAppUrl": "[parameters('AzureFunction1_properties_typeProperties_functionAppUrl')]",
+					"functionKey": {
 						"type": "SecureString",
-						"value": "[parameters('AzureDatabricksDeltaLake1_accessToken')]"
-					}
+						"value": "[parameters('AzureFunction1_functionKey')]"
+					},
+					"authentication": "Anonymous"
 				}
 			},
 			"dependsOn": []
@@ -526,11 +1079,15 @@
 				"typeProperties": {
 					"domain": "https://adb-1558361433928880.0.azuredatabricks.net",
 					"accessToken": {
-						"type": "SecureString",
-						"value": "[parameters('RettaDBrcks_accessToken')]"
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzureKeyVaultRetta",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "DatabricksToken"
 					},
 					"newClusterNodeType": "Standard_DS3_v2",
-					"newClusterNumOfWorker": "0:2",
+					"newClusterNumOfWorker": "1:2",
 					"newClusterSparkEnvVars": {
 						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
 					},
@@ -540,7 +1097,9 @@
 					"clusterOption": "Autoscaling"
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureKeyVaultRetta')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/WeatherAPI')]",
@@ -551,6 +1110,26 @@
 				"type": "RestService",
 				"typeProperties": {
 					"url": "[parameters('WeatherAPI_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WeatherAPIParam')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"location_key_param": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('WeatherAPIParam_properties_typeProperties_url')]",
 					"enableServerCertificateValidation": true,
 					"authenticationType": "Anonymous"
 				}
@@ -599,6 +1178,33 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/metryIntg')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('metryIntg_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous",
+					"authHeaders": {
+						"Authorization": {
+							"type": "AzureKeyVaultSecret",
+							"store": {
+								"referenceName": "AzureKeyVaultRetta",
+								"type": "LinkedServiceReference"
+							},
+							"secretName": "metritoken"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureKeyVaultRetta')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/load_enrgy_data')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
@@ -609,6 +1215,13 @@
 					{
 						"pipelineReference": {
 							"referenceName": "energy_dly_ld",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					},
+					{
+						"pipelineReference": {
+							"referenceName": "pipeline2",
 							"type": "PipelineReference"
 						},
 						"parameters": {}
@@ -633,7 +1246,8 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/energy_dly_ld')]"
+				"[concat(variables('factoryId'), '/pipelines/energy_dly_ld')]",
+				"[concat(variables('factoryId'), '/pipelines/pipeline2')]"
 			]
 		},
 		{
@@ -645,120 +1259,6 @@
 				"typeProperties": {}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/weather_iterative')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Weather_Ingestion",
-						"type": "Copy",
-						"dependsOn": [
-							{
-								"activity": "Lookup1",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "RestSource",
-								"additionalColumns": [
-									{
-										"name": "WeatherCaptureTime",
-										"value": {
-											"value": "@formatDatetime(utcnow(),'MMddyyyhh')",
-											"type": "Expression"
-										}
-									}
-								],
-								"httpRequestTimeout": "00:01:40",
-								"requestInterval": "00.00:00:36.000",
-								"requestMethod": "GET",
-								"paginationRules": {
-									"supportRFC5988": "true"
-								}
-							},
-							"sink": {
-								"type": "JsonSink",
-								"storeSettings": {
-									"type": "AzureBlobStorageWriteSettings"
-								},
-								"formatSettings": {
-									"type": "JsonWriteSettings"
-								}
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "WeatherDS",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "WeatherSinkJson",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					},
-					{
-						"name": "Lookup1",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"dataset": {
-								"referenceName": "WeatherLocationDS",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/WeatherDS')]",
-				"[concat(variables('factoryId'), '/datasets/WeatherSinkJson')]",
-				"[concat(variables('factoryId'), '/datasets/WeatherLocationDS')]"
-			]
 		}
 	]
 }

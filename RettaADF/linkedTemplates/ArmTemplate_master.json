@@ -11,13 +11,9 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
 		},
-		"AzureDatabricksDeltaLake1_accessToken": {
+		"AzureFunction1_functionKey": {
 			"type": "secureString",
-			"metadata": "Secure string for 'accessToken' of 'AzureDatabricksDeltaLake1'"
-		},
-		"RettaDBrcks_accessToken": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accessToken' of 'RettaDBrcks'"
+			"metadata": "Secure string for 'functionKey' of 'AzureFunction1'"
 		},
 		"WeatherBlobStorage_connectionString": {
 			"type": "secureString",
@@ -31,6 +27,10 @@
 			"type": "string",
 			"defaultValue": "https://rettadatalake.dfs.core.windows.net/"
 		},
+		"AzureFunction1_properties_typeProperties_functionAppUrl": {
+			"type": "string",
+			"defaultValue": "https://rettaapi.azurewebsites.net"
+		},
 		"AzureKeyVaultRetta_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://rettakvault.vault.azure.net/"
@@ -43,9 +43,17 @@
 			"type": "string",
 			"defaultValue": "http://dataservice.accuweather.com/currentconditions/v1/133022?apikey=8DUFt2aT98g8GAPZmTfIZ8srP9Ezj6Gy&details=true"
 		},
+		"WeatherAPIParam_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "@concat('http://dataservice.accuweather.com/currentconditions/v1/',linkedService().location_key_param,'?apikey=8DUFt2aT98g8GAPZmTfIZ8srP9Ezj6Gy&details=true')"
+		},
 		"energy_hrly_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://app.metry.io/api/v2/streams/62bd9c2aacea0e68c708393c/consume?access_token=722090723400a9181120f957636348769bae76b0cef705721e3884217ec8"
+		},
+		"metryIntg_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://app.metry.io/api/v2/"
 		},
 		"containerUri": {
 			"type": "string",
@@ -77,11 +85,8 @@
 					"AzureDataLakeStorage1_accountKey": {
 						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
 					},
-					"AzureDatabricksDeltaLake1_accessToken": {
-						"value": "[parameters('AzureDatabricksDeltaLake1_accessToken')]"
-					},
-					"RettaDBrcks_accessToken": {
-						"value": "[parameters('RettaDBrcks_accessToken')]"
+					"AzureFunction1_functionKey": {
+						"value": "[parameters('AzureFunction1_functionKey')]"
 					},
 					"WeatherBlobStorage_connectionString": {
 						"value": "[parameters('WeatherBlobStorage_connectionString')]"
@@ -92,6 +97,9 @@
 					"AzureDataLakeStorage1_properties_typeProperties_url": {
 						"value": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]"
 					},
+					"AzureFunction1_properties_typeProperties_functionAppUrl": {
+						"value": "[parameters('AzureFunction1_properties_typeProperties_functionAppUrl')]"
+					},
 					"AzureKeyVaultRetta_properties_typeProperties_baseUrl": {
 						"value": "[parameters('AzureKeyVaultRetta_properties_typeProperties_baseUrl')]"
 					},
@@ -100,6 +108,9 @@
 					},
 					"WeatherAPI_properties_typeProperties_url": {
 						"value": "[parameters('WeatherAPI_properties_typeProperties_url')]"
+					},
+					"WeatherAPIParam_properties_typeProperties_url": {
+						"value": "[parameters('WeatherAPIParam_properties_typeProperties_url')]"
 					},
 					"energy_hrly_properties_typeProperties_url": {
 						"value": "[parameters('energy_hrly_properties_typeProperties_url')]"
@@ -121,6 +132,9 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"metryIntg_properties_typeProperties_url": {
+						"value": "[parameters('metryIntg_properties_typeProperties_url')]"
 					}
 				}
 			},
