@@ -1,0 +1,23 @@
+{
+	"name": "metrydly",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "metryIntg",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"endpoint": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@dataset().endpoint",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	}
+}

@@ -1,0 +1,90 @@
+{
+	"name": "pipeline2",
+	"properties": {
+		"activities": [
+			{
+				"name": "Extract daily and monthly data",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "metrydly",
+						"type": "DatasetReference",
+						"parameters": {
+							"endpoint": "meters"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "energy_dly_mnthly",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Parse Transform and Load",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Extract daily and monthly data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Repos/prayank.sharma@routadigital.com/retta/energy_dly_scripts/energy_dly_seq"
+				},
+				"linkedServiceName": {
+					"referenceName": "RettaDBrcks",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"variables": {
+			"test": {
+				"type": "String",
+				"defaultValue": "1"
+			}
+		},
+		"annotations": []
+	}
+}
