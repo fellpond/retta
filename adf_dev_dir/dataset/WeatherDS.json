@@ -5,6 +5,9 @@
 			"referenceName": "WeatherAPI",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "weather_datasets"
+		},
 		"annotations": [],
 		"type": "RestResource",
 		"schema": []

@@ -10,6 +10,9 @@
 				"type": "string"
 			}
 		},
+		"folder": {
+			"name": "energy_datasets/api_ds"
+		},
 		"annotations": [],
 		"type": "RestResource",
 		"typeProperties": {

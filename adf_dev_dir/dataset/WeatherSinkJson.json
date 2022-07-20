@@ -5,6 +5,9 @@
 			"referenceName": "WeatherBlobStorage",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "weather_datasets"
+		},
 		"annotations": [],
 		"type": "Json",
 		"typeProperties": {

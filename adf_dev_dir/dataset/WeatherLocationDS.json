@@ -5,6 +5,9 @@
 			"referenceName": "blob_Weather_Location_Config",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "weather_datasets"
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {

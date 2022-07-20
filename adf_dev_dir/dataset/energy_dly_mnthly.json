@@ -5,6 +5,9 @@
 			"referenceName": "AzureDataLakeStorage1",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "energy_datasets/storage_ds"
+		},
 		"annotations": [],
 		"type": "Json",
 		"typeProperties": {
