@@ -26,17 +26,11 @@
 		"AzureKeyVaultRetta_properties_typeProperties_baseUrl": {
 			"value": "https://rettakvault.vault.azure.net/"
 		},
-		"MetryAPI_properties_typeProperties_url": {
-			"value": "https://app.metry.io/api/v2/meters?access_token=722090723400a9181120f957636348769bae76b0cef705721e3884217ec8"
-		},
 		"WeatherAPI_properties_typeProperties_url": {
 			"value": "http://dataservice.accuweather.com/currentconditions/v1/133022?apikey=8DUFt2aT98g8GAPZmTfIZ8srP9Ezj6Gy&details=true"
 		},
 		"WeatherAPIParam_properties_typeProperties_url": {
 			"value": "@concat('http://dataservice.accuweather.com/currentconditions/v1/',linkedService().location_key_param,'?apikey=8DUFt2aT98g8GAPZmTfIZ8srP9Ezj6Gy&details=true')"
-		},
-		"energy_hrly_properties_typeProperties_url": {
-			"value": "https://app.metry.io/api/v2/streams/62bd9c2aacea0e68c708393c/consume?access_token=722090723400a9181120f957636348769bae76b0cef705721e3884217ec8"
 		},
 		"metryIntg_properties_typeProperties_url": {
 			"value": "https://app.metry.io/api/v2/"

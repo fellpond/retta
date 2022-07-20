@@ -35,10 +35,6 @@
 			"type": "string",
 			"defaultValue": "https://rettakvault.vault.azure.net/"
 		},
-		"MetryAPI_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://app.metry.io/api/v2/meters?access_token=722090723400a9181120f957636348769bae76b0cef705721e3884217ec8"
-		},
 		"WeatherAPI_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "http://dataservice.accuweather.com/currentconditions/v1/133022?apikey=8DUFt2aT98g8GAPZmTfIZ8srP9Ezj6Gy&details=true"
@@ -46,10 +42,6 @@
 		"WeatherAPIParam_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "@concat('http://dataservice.accuweather.com/currentconditions/v1/',linkedService().location_key_param,'?apikey=8DUFt2aT98g8GAPZmTfIZ8srP9Ezj6Gy&details=true')"
-		},
-		"energy_hrly_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://app.metry.io/api/v2/streams/62bd9c2aacea0e68c708393c/consume?access_token=722090723400a9181120f957636348769bae76b0cef705721e3884217ec8"
 		},
 		"metryIntg_properties_typeProperties_url": {
 			"type": "string",
@@ -61,167 +53,7 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/databricks_intg')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "databricks",
-						"type": "DatabricksNotebook",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"notebookPath": "/Users/prayank.sharma@routadigital.com/enrgy_etl"
-						},
-						"linkedServiceName": {
-							"referenceName": "RettaDBrcks",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": [],
-				"lastPublishTime": "2022-07-05T07:30:29Z"
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/RettaDBrcks')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/energy_dly_ld')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "copy_enrgy_dly",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "RestSource",
-								"httpRequestTimeout": "00:01:40",
-								"requestInterval": "00.00:00:00.010",
-								"requestMethod": "GET",
-								"paginationRules": {
-									"supportRFC5988": "true"
-								}
-							},
-							"sink": {
-								"type": "JsonSink",
-								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings"
-								},
-								"formatSettings": {
-									"type": "JsonWriteSettings"
-								}
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "energy_dly",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "energy_dly_stg",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					},
-					{
-						"name": "Parse InputJson",
-						"type": "DatabricksNotebook",
-						"dependsOn": [
-							{
-								"activity": "copy_enrgy_dly",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"notebookPath": "/Users/prayank.sharma@routadigital.com/enrgyDly_parser_adf"
-						},
-						"linkedServiceName": {
-							"referenceName": "RettaDBrcks",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "transformation",
-						"type": "DatabricksNotebook",
-						"dependsOn": [
-							{
-								"activity": "Parse InputJson",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"notebookPath": "/Users/prayank.sharma@routadigital.com/energy_dly_transformation"
-						},
-						"linkedServiceName": {
-							"referenceName": "RettaDBrcks",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": [],
-				"lastPublishTime": "2022-07-03T19:00:11Z"
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/energy_dly')]",
-				"[concat(variables('factoryId'), '/datasets/energy_dly_stg')]",
-				"[concat(variables('factoryId'), '/linkedServices/RettaDBrcks')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"name": "[concat(parameters('factoryName'), '/energy_hrly_ld')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -229,7 +61,14 @@
 					{
 						"name": "copy_enrgy_hrly",
 						"type": "Copy",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "fetch last offset",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "7.00:00:00",
 							"retry": 0,
@@ -244,7 +83,10 @@
 								"httpRequestTimeout": "00:01:40",
 								"requestInterval": "00.00:00:00.010",
 								"requestMethod": "POST",
-								"requestBody": "{\n  \"offset\": null\n}",
+								"requestBody": {
+									"value": "@concat('{\"offset:\"','\"',activity('fetch last offset').output.firstRow.offset,'\"}')",
+									"type": "Expression"
+								},
 								"paginationRules": {
 									"supportRFC5988": "true"
 								}
@@ -262,9 +104,11 @@
 						},
 						"inputs": [
 							{
-								"referenceName": "energy_hrly",
+								"referenceName": "metryDS",
 								"type": "DatasetReference",
-								"parameters": {}
+								"parameters": {
+									"endpoint": "streams/62bd9c2aacea0e68c708393c/consume"
+								}
 							}
 						],
 						"outputs": [
@@ -274,21 +118,56 @@
 								"parameters": {}
 							}
 						]
+					},
+					{
+						"name": "fetch last offset",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "hourlyOffset",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
 					}
 				],
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
 				},
+				"folder": {
+					"name": "energy_pipelines"
+				},
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/energy_hrly')]",
-				"[concat(variables('factoryId'), '/datasets/energy_hrly_stg')]"
+				"[concat(variables('factoryId'), '/datasets/metryDS')]",
+				"[concat(variables('factoryId'), '/datasets/energy_hrly_stg')]",
+				"[concat(variables('factoryId'), '/datasets/hourlyOffset')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pipeline2')]",
+			"name": "[concat(parameters('factoryName'), '/energy_dly_mnthly_ld')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -328,7 +207,7 @@
 						},
 						"inputs": [
 							{
-								"referenceName": "metrydly",
+								"referenceName": "metryDS",
 								"type": "DatasetReference",
 								"parameters": {
 									"endpoint": "meters"
@@ -381,10 +260,13 @@
 						"defaultValue": "1"
 					}
 				},
+				"folder": {
+					"name": "energy_pipelines"
+				},
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/metrydly')]",
+				"[concat(variables('factoryId'), '/datasets/metryDS')]",
 				"[concat(variables('factoryId'), '/datasets/energy_dly_mnthly')]",
 				"[concat(variables('factoryId'), '/linkedServices/RettaDBrcks')]"
 			]
@@ -456,6 +338,9 @@
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "weather_pipelines"
 				},
 				"annotations": []
 			},
@@ -580,6 +465,9 @@
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "weather_pipelines"
 				},
 				"annotations": []
 			},
@@ -714,6 +602,9 @@
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
 				},
+				"folder": {
+					"name": "weather_pipelines"
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -730,6 +621,9 @@
 				"linkedServiceName": {
 					"referenceName": "WeatherAPI",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "weather_datasets"
 				},
 				"annotations": [],
 				"type": "RestResource",
@@ -760,6 +654,9 @@
 						"type": "string"
 					}
 				},
+				"folder": {
+					"name": "weather_datasets"
+				},
 				"annotations": [],
 				"type": "RestResource",
 				"typeProperties": {},
@@ -777,6 +674,9 @@
 				"linkedServiceName": {
 					"referenceName": "blob_Weather_Location_Config",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "weather_datasets"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -807,6 +707,9 @@
 					"referenceName": "WeatherBlobStorage",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "weather_datasets"
+				},
 				"annotations": [],
 				"type": "Json",
 				"typeProperties": {
@@ -827,54 +730,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/energy_dly')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "MetryAPI",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "RestResource",
-				"typeProperties": {
-					"relativeUrl": ""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/MetryAPI')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/energy_dly_archive')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@concat('energy_dly_',utcnow('yyyyMMdd'))",
-							"type": "Expression"
-						},
-						"folderPath": "Archive",
-						"fileSystem": "energydlyin"
-					}
-				},
-				"schema": {}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/energy_dly_mnthly')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -882,6 +737,9 @@
 				"linkedServiceName": {
 					"referenceName": "AzureDataLakeStorage1",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "energy_datasets/storage_ds"
 				},
 				"annotations": [],
 				"type": "Json",
@@ -903,54 +761,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/energy_dly_stg')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@concat('energy_dly_',utcnow('yyyyMMdd'))",
-							"type": "Expression"
-						},
-						"folderPath": "input",
-						"fileSystem": "energydlyin"
-					}
-				},
-				"schema": {}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/energy_hrly')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "energy_hrly",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "RestResource",
-				"typeProperties": {
-					"relativeUrl": ""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/energy_hrly')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/energy_hrly_stg')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -959,17 +769,20 @@
 					"referenceName": "AzureDataLakeStorage1",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "energy_datasets/storage_ds"
+				},
 				"annotations": [],
 				"type": "Json",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
 						"fileName": {
-							"value": "@concat('energy_hrly_', utcnow('yyyy-MM-dd'))",
+							"value": "@concat('energy_hrly_', utcnow('yyyyMMdd'))",
 							"type": "Expression"
 						},
-						"folderPath": "energy_hrly_data",
-						"fileSystem": "energyraw"
+						"folderPath": "energy_hrly/input",
+						"fileSystem": "bronze"
 					}
 				},
 				"schema": {}
@@ -979,7 +792,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/metrydly')]",
+			"name": "[concat(parameters('factoryName'), '/metryDS')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -991,6 +804,9 @@
 					"endpoint": {
 						"type": "string"
 					}
+				},
+				"folder": {
+					"name": "energy_datasets/api_ds"
 				},
 				"annotations": [],
 				"type": "RestResource",
@@ -1050,21 +866,6 @@
 				"type": "AzureKeyVault",
 				"typeProperties": {
 					"baseUrl": "[parameters('AzureKeyVaultRetta_properties_typeProperties_baseUrl')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/MetryAPI')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "RestService",
-				"typeProperties": {
-					"url": "[parameters('MetryAPI_properties_typeProperties_url')]",
-					"enableServerCertificateValidation": true,
-					"authenticationType": "Anonymous"
 				}
 			},
 			"dependsOn": []
@@ -1163,21 +964,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/energy_hrly')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "RestService",
-				"typeProperties": {
-					"url": "[parameters('energy_hrly_properties_typeProperties_url')]",
-					"enableServerCertificateValidation": true,
-					"authenticationType": "Anonymous"
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/metryIntg')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -1214,14 +1000,7 @@
 				"pipelines": [
 					{
 						"pipelineReference": {
-							"referenceName": "energy_dly_ld",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					},
-					{
-						"pipelineReference": {
-							"referenceName": "pipeline2",
+							"referenceName": "energy_dly_mnthly_ld",
 							"type": "PipelineReference"
 						},
 						"parameters": {}
@@ -1246,8 +1025,7 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/energy_dly_ld')]",
-				"[concat(variables('factoryId'), '/pipelines/pipeline2')]"
+				"[concat(variables('factoryId'), '/pipelines/energy_dly_mnthly_ld')]"
 			]
 		},
 		{
@@ -1259,6 +1037,38 @@
 				"typeProperties": {}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/hourlyOffset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "energy_datasets/storage_ds"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "hourly_offset.csv",
+						"folderPath": "energy_hrly/config",
+						"fileSystem": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
 		}
 	]
 }
