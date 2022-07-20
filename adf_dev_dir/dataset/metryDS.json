@@ -1,5 +1,5 @@
 {
-	"name": "metrydly",
+	"name": "metryDS",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "metryIntg",

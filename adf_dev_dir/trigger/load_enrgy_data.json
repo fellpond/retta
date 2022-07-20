@@ -6,13 +6,7 @@
 		"pipelines": [
 			{
 				"pipelineReference": {
-					"referenceName": "energy_dly_ld",
-					"type": "PipelineReference"
-				}
-			},
-			{
-				"pipelineReference": {
-					"referenceName": "pipeline2",
+					"referenceName": "energy_dly_mnthly_ld",
 					"type": "PipelineReference"
 				}
 			}

@@ -1,5 +1,5 @@
 {
-	"name": "pipeline2",
+	"name": "energy_dly_mnthly_ld",
 	"properties": {
 		"activities": [
 			{
@@ -37,7 +37,7 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "metrydly",
+						"referenceName": "metryDS",
 						"type": "DatasetReference",
 						"parameters": {
 							"endpoint": "meters"
