@@ -1,0 +1,12 @@
+{
+	"name": "metryIntg",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://app.metry.io/api/v2/meters",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		}
+	}
+}
