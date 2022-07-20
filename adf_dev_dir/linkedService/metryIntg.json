@@ -6,7 +6,17 @@
 		"typeProperties": {
 			"url": "https://app.metry.io/api/v2/meters",
 			"enableServerCertificateValidation": true,
-			"authenticationType": "Anonymous"
+			"authenticationType": "Anonymous",
+			"authHeaders": {
+				"Bearer": {
+					"type": "AzureKeyVaultSecret",
+					"store": {
+						"referenceName": "AzureKeyVaultRetta",
+						"type": "LinkedServiceReference"
+					},
+					"secretName": "MetryToken"
+				}
+			}
 		}
 	}
 }
