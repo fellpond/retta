@@ -1,5 +1,5 @@
 {
-	"name": "energy_hrly_stg",
+	"name": "hourlyOffset",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureDataLakeStorage1",
@@ -9,19 +9,19 @@
 			"name": "energy_datasets/storage_ds"
 		},
 		"annotations": [],
-		"type": "Json",
+		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": {
-					"value": "@concat('energy_hrly_', utcnow('yyyyMMdd'))",
-					"type": "Expression"
-				},
-				"folderPath": "energy_hrly/input",
+				"fileName": "hourly_offset.csv",
+				"folderPath": "energy_hrly/config",
 				"fileSystem": "bronze"
-			}
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
 		},
-		"schema": {}
-	},
-	"type": "Microsoft.DataFactory/factories/datasets"
+		"schema": []
+	}
 }

@@ -7,7 +7,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "Lookup1",
+						"activity": "fetch last offset",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -28,7 +28,7 @@
 						"requestInterval": "00.00:00:00.010",
 						"requestMethod": "POST",
 						"requestBody": {
-							"value": "@concat('{\"offset\":',pipeline().parameters.offset,'}')",
+							"value": "@concat('{\"offset:\"','\"',activity('fetch last offset').output.firstRow.offset,'\"}')",
 							"type": "Expression"
 						},
 						"paginationRules": {
@@ -63,7 +63,7 @@
 				]
 			},
 			{
-				"name": "Lookup1",
+				"name": "fetch last offset",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -73,14 +73,26 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "hourlyOffset",
+						"type": "DatasetReference"
+					}
+				}
 			}
 		],
-		"parameters": {
-			"offset": {
-				"type": "string"
-			}
-		},
 		"folder": {
 			"name": "energy_pipelines"
 		},
