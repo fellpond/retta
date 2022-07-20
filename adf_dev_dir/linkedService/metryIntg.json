@@ -8,13 +8,13 @@
 			"enableServerCertificateValidation": true,
 			"authenticationType": "Anonymous",
 			"authHeaders": {
-				"Bearer": {
+				"Authorization": {
 					"type": "AzureKeyVaultSecret",
 					"store": {
 						"referenceName": "AzureKeyVaultRetta",
 						"type": "LinkedServiceReference"
 					},
-					"secretName": "MetryToken"
+					"secretName": "metritoken"
 				}
 			}
 		}
