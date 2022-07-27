@@ -1,0 +1,40 @@
+{
+	"name": "Email_Notifier",
+	"properties": {
+		"activities": [
+			{
+				"name": "Send email on failure",
+				"type": "WebHook",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-27.northeurope.logic.azure.com:443/workflows/1595b262bc93402aa1d613288978880a/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=20I-mJPWXX1unFqWDmhgTLBURQYVlPtJc147nM3y7Ek",
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"value": "{\n\t\"EmailTo\": \"@{pipeline().parameters.EmailTo}\",\n\t\"Subject\": \"An error has occured in the @{pipeline().Pipeline}-pipeline\",\n\t\"DataFactoryName\": \"@{pipeline().DataFactory}\",\n\t\"PipelineName\": \"@{pipeline().Pipeline}\",\n\t\"Activity\": \"@{pipeline().parameters.Activity}\",\n\t\"ErrorMessage\": \"@{pipeline().parameters.ErrorMessage}\"\n}",
+						"type": "Expression"
+					},
+					"timeout": "00:10:00"
+				}
+			}
+		],
+		"parameters": {
+			"EmailTo": {
+				"type": "string"
+			},
+			"Activity": {
+				"type": "string"
+			},
+			"ErrorMessage": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Misc"
+		},
+		"annotations": []
+	}
+}
