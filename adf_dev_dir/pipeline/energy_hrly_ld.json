@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "copy_enrgy_hrly",
+				"name": "Extract hourly data",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -90,6 +90,33 @@
 						"referenceName": "hourlyOffset",
 						"type": "DatasetReference"
 					}
+				}
+			},
+			{
+				"name": "Parse Transform and Load",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Extract hourly data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Repos/prayank.sharma@routadigital.com/retta/energy_hourly_scripts/energy_hourly_seq"
+				},
+				"linkedServiceName": {
+					"referenceName": "RettaDBrcks",
+					"type": "LinkedServiceReference"
 				}
 			}
 		],
