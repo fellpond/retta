@@ -53,101 +53,27 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/energy_hrly_ld')]",
+			"name": "[concat(parameters('factoryName'), '/Email_Notifier')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "copy_enrgy_hrly",
-						"type": "Copy",
-						"dependsOn": [
-							{
-								"activity": "fetch last offset",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "RestSource",
-								"httpRequestTimeout": "00:01:40",
-								"requestInterval": "00.00:00:00.010",
-								"requestMethod": "POST",
-								"requestBody": {
-									"value": "@concat('{\"offset:\"','\"',activity('fetch last offset').output.firstRow.offset,'\"}')",
-									"type": "Expression"
-								},
-								"paginationRules": {
-									"supportRFC5988": "true"
-								}
-							},
-							"sink": {
-								"type": "JsonSink",
-								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings"
-								},
-								"formatSettings": {
-									"type": "JsonWriteSettings"
-								}
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "metryDS",
-								"type": "DatasetReference",
-								"parameters": {
-									"endpoint": "streams/62bd9c2aacea0e68c708393c/consume"
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "energy_hrly_stg",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					},
-					{
-						"name": "fetch last offset",
-						"type": "Lookup",
+						"name": "Send email on failure",
+						"type": "WebHook",
 						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
 						"userProperties": [],
 						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobFSReadSettings",
-									"recursive": true,
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
+							"url": "https://prod-27.northeurope.logic.azure.com:443/workflows/1595b262bc93402aa1d613288978880a/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=20I-mJPWXX1unFqWDmhgTLBURQYVlPtJc147nM3y7Ek",
+							"method": "POST",
+							"headers": {
+								"Content-Type": "application/json"
 							},
-							"dataset": {
-								"referenceName": "hourlyOffset",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
+							"body": {
+								"value": "{\n\t\"EmailTo\": \"@{pipeline().parameters.EmailTo}\",\n\t\"Subject\": \"An error has occured in the @{pipeline().Pipeline}-pipeline\",\n\t\"DataFactoryName\": \"@{pipeline().DataFactory}\",\n\t\"PipelineName\": \"@{pipeline().Pipeline}\",\n\t\"Activity\": \"@{pipeline().parameters.Activity}\",\n\t\"ErrorMessage\": \"@{pipeline().parameters.ErrorMessage}\"\n}",
+								"type": "Expression"
+							},
+							"timeout": "00:10:00"
 						}
 					}
 				],
@@ -155,16 +81,23 @@
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
 				},
+				"parameters": {
+					"EmailTo": {
+						"type": "string"
+					},
+					"Activity": {
+						"type": "string"
+					},
+					"ErrorMessage": {
+						"type": "string"
+					}
+				},
 				"folder": {
-					"name": "energy_pipelines"
+					"name": "Misc"
 				},
 				"annotations": []
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/metryDS')]",
-				"[concat(variables('factoryId'), '/datasets/energy_hrly_stg')]",
-				"[concat(variables('factoryId'), '/datasets/hourlyOffset')]"
-			]
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/energy_dly_mnthly_ld')]",
@@ -268,6 +201,148 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/metryDS')]",
 				"[concat(variables('factoryId'), '/datasets/energy_dly_mnthly')]",
+				"[concat(variables('factoryId'), '/linkedServices/RettaDBrcks')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/energy_hrly_ld')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Extract hourly data",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "fetch last offset",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "POST",
+								"requestBody": {
+									"value": "@concat('{\"offset:\"','\"',activity('fetch last offset').output.firstRow.offset,'\"}')",
+									"type": "Expression"
+								},
+								"paginationRules": {
+									"supportRFC5988": "true"
+								}
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "metryDS",
+								"type": "DatasetReference",
+								"parameters": {
+									"endpoint": "streams/62bd9c2aacea0e68c708393c/consume"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "energy_hrly_stg",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "fetch last offset",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "hourlyOffset",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Parse Transform and Load",
+						"type": "DatabricksNotebook",
+						"dependsOn": [
+							{
+								"activity": "Extract hourly data",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Repos/prayank.sharma@routadigital.com/retta/energy_hourly_scripts/energy_hourly_seq"
+						},
+						"linkedServiceName": {
+							"referenceName": "RettaDBrcks",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "energy_pipelines"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/metryDS')]",
+				"[concat(variables('factoryId'), '/datasets/energy_hrly_stg')]",
+				"[concat(variables('factoryId'), '/datasets/hourlyOffset')]",
 				"[concat(variables('factoryId'), '/linkedServices/RettaDBrcks')]"
 			]
 		},
@@ -792,6 +867,38 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/hourlyOffset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "energy_datasets/storage_ds"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "hourly_offset.csv",
+						"folderPath": "energy_hrly/config",
+						"fileSystem": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/metryDS')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1039,35 +1146,38 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/hourlyOffset')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
+			"name": "[concat(parameters('factoryName'), '/energy_hourly_trigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "energy_datasets/storage_ds"
-				},
 				"annotations": [],
-				"type": "DelimitedText",
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "energy_hrly_ld",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
 				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": "hourly_offset.csv",
-						"folderPath": "energy_hrly/config",
-						"fileSystem": "bronze"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2022-07-28T04:09:00",
+						"timeZone": "Eastern Standard Time",
+						"schedule": {
+							"hours": [
+								12
+							]
+						}
+					}
+				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+				"[concat(variables('factoryId'), '/pipelines/energy_hrly_ld')]"
 			]
 		}
 	]
