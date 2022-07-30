@@ -30,27 +30,16 @@ def setConfigAdls():
 # COMMAND ----------
 
 adlsAccountName = "rettadatalake"
-adlsContainerName = ["energydlyin", "energydlydtg"]
-mountPoints = ["/mnt/energy_dly_in", "/mnt/energy_dly_stg"]
+adlsContainerNames = ['bronze', 'silver', 'gold']
 
-container_mnt_map = dict(zip(adlsContainerName, mountPoint))
-
-
- 
-#unmount existing storage account
-for mount in mountPoints:
-    sub_unmount(mount)
 
 
 #set configuration and mount adls containers to /mnt location 
 configs=setConfigAdls()
-
-
-for container, mount in container_mnt_map.items():
-    mount_adls(adlsAccountName, container, mount, configs)
-    
-
-
-# COMMAND ----------
+for container in adlsContainerNames:
+    if any(mount.mountPoint == '/mnt/'+ container for mount in dbutils.fs.mounts()):
+        pass
+    else:
+        mount_adls(adlsAccountName, container, '/mnt/'+ container, configs)
 
 

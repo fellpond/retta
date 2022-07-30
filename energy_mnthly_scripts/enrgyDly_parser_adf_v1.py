@@ -1,30 +1,32 @@
 # Databricks notebook source
-# MAGIC %run ../common/mount_adls
-
-# COMMAND ----------
-
 dbutils.widgets.text(name = 'input_path',   defaultValue = '/mnt/bronze/energy_dly_mnthly/input/')
 dbutils.widgets.text(name = 'file_name', defaultValue = 'energy_dly*')
-dbutils.widgets.text(name = 'dly_ref_path', defaultValue = '/mnt/silver/energy_dly_ref')
-dbutils.widgets.text(name = 'mnthly_ref_path', defaultValue = '/mnt/silver/energy_mnthly_ref')
+dbutils.widgets.text(name = 'daily_stg_path', defaultValue = '/mnt/silver/energy_dly_stg')
+dbutils.widgets.text(name = 'monthly_stg_path', defaultValue = '/mnt/silver/energy_monthly_stg')
 
 # COMMAND ----------
 
-enrgyDlyPath=dbutils.widgets.get('input_path')
+def readJson(path):
+    try:
+        df = spark.read.json(path)
+        return df
+    except:
+        raise Exception("No file present")
 
-file_name = dbutils.widgets.get('file_name')
-dly_ref_path = dbutils.widgets.get('dly_ref_path')
-mnthly_ref_path = dbutils.widgets.get('mnthly_ref_path')
+    
+
 
 # COMMAND ----------
 
 import pyspark.sql.functions as F
 from pyspark.sql.types import DoubleType
-import common.common_functions as cf
+enrgyDlyPath=dbutils.widgets.get('input_path')
 
- 
+file_name = dbutils.widgets.get('file_name')
+daily_stg_path = dbutils.widgets.get('daily_stg_path')
+monthly_stg_path = dbutils.widgets.get('monthly_stg_path')
 
-enrgyDly_df = cf.readJson(spark,enrgyDlyPath + file_name)
+enrgyDly_df = readJson(enrgyDlyPath + file_name)
 
 df=enrgyDly_df
 
@@ -50,42 +52,50 @@ df = df.withColumn('daily',df['energy'].getItem('day'))\
         .withColumn('month',df['energy'].getItem('month')).drop('energy')
 
 
-df = df.withColumn('dly_cnt', df['daily'].getItem('count'))\
+df_dly = df.withColumn('dly_cnt', df['daily'].getItem('count'))\
         .withColumn('dly_strt_dt', df['daily'].getItem('first'))\
         .withColumn('dly_end_dt', df['daily'].getItem('last'))\
         .withColumn('dly_max', df['daily'].getItem('max'))\
         .withColumn('dly_min', df['daily'].getItem('min'))\
-        .withColumn('dly_sum', df['daily'].getItem('sum'))\
-        .withColumn('mnthly_cnt', df['month'].getItem('count'))\
+        .withColumn('dly_sum', df['daily'].getItem('sum')) 
+         
+
+df_mnthly1 = df.withColumn('mnthly_cnt', df['month'].getItem('count'))\
         .withColumn('mnthly_strt_dt', df['month'].getItem('first'))\
         .withColumn('mnthly_end_dt', df['month'].getItem('last'))\
         .withColumn('mnthly_max', df['month'].getItem('max'))\
         .withColumn('mnthly_min', df['month'].getItem('min'))\
         .withColumn('mnthly_sum', df['month'].getItem('sum'))  
 
-         
+
+
 
 col = ('daily', 'month', 'hour')
-df = df.drop(*col)
+df_dly = df_dly.drop(*col)
+df_mnthly = df_mnthly1.drop(*col)
+
+df_dly = df_dly.withColumn('dly_sum',df_dly['dly_sum'].cast(DoubleType()))\
+        .withColumn('dly_strt_dt', F.to_date(df_dly['dly_strt_dt'].cast('string'), 'yyyyMMdd'))\
+        .withColumn('dly_end_dt', F.to_date(df_dly['dly_end_dt'].cast('string'), 'yyyyMMdd'))\
 
 
-df = df.withColumn('dly_sum',df['dly_sum'].cast(DoubleType()))\
-       .withColumn('dly_end_dt', F.to_date(df['dly_end_dt'].cast('string'), 'yyyyMMdd'))\
-       .withColumn('mnthly_sum',df['mnthly_sum'].cast(DoubleType()))\
-       .withColumn('mnthly_end_dt', F.to_date(df['mnthly_end_dt'].cast('string'), 'yyyyMM'))\
+df_mnthly = df_mnthly.withColumn('mnthly_sum',df_mnthly['mnthly_sum'].cast(DoubleType()))\
+        .withColumn('mnthly_strt_dt', F.to_date(df_mnthly['mnthly_strt_dt'].cast('string'), 'yyyyMM'))\
+        .withColumn('mnthly_end_dt', F.to_date(df_mnthly['mnthly_end_dt'].cast('string'), 'yyyyMM'))\
+ 
 
 
-dly_ref = df.select('ean', 'dly_end_dt', 'dly_sum', 'box')
-mnthly_ref = df.select('ean', 'mnthly_end_dt', 'mnthly_sum', 'box')
+#df_dly.write.mode("overwrite").format("delta").option('path', daily_stg_path).saveAsTable('retta.energy_dly_stg')
+#df_mnthly.write.mode("overwrite").format("delta").option('path', monthly_stg_path).saveAsTable('retta.energy_monthly_stg')
 
-
-
-                   
-dly_ref.write.format('delta').mode('overwrite').option('path', dly_ref_path).saveAsTable('retta.energy_dly_ref')
-mnthly_ref.write.format('delta').mode('overwrite').option('path', mnthly_ref_path).saveAsTable('retta.energy_monthly_ref')
 
 
 
 # COMMAND ----------
 
-cf.archiveProcess(dbutils, '/mnt/bronze/energy_dly_mnthly/input/','/mnt/bronze/energy_dly_mnthly/archive')
+#display(df_mnthly1)
+display(df_mnthly)
+
+# COMMAND ----------
+
+
