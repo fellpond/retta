@@ -413,7 +413,7 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "hourly_offset.csv",
+						"fileName": "offset.csv",
 						"folderPath": "energy_hrly/config",
 						"fileSystem": "bronze"
 					},
