@@ -2,11 +2,17 @@
 	"name": "energy_hourly_trigger",
 	"properties": {
 		"annotations": [],
-		"runtimeState": "Stopped",
+		"runtimeState": "Started",
 		"pipelines": [
 			{
 				"pipelineReference": {
 					"referenceName": "energy_hrly_ld",
+					"type": "PipelineReference"
+				}
+			},
+			{
+				"pipelineReference": {
+					"referenceName": "weather",
 					"type": "PipelineReference"
 				}
 			}
