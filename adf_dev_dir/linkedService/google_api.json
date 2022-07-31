@@ -2,7 +2,7 @@
 	"name": "google_api",
 	"properties": {
 		"parameters": {
-			"API_KEY": {
+			"key": {
 				"type": "string",
 				"defaultValue": "AIzaSyDpMzOD20awzJOE-7PNfuEpjfVz3qW44Gc"
 			},
