@@ -1,0 +1,21 @@
+{
+	"name": "google_api",
+	"properties": {
+		"parameters": {
+			"API_KEY": {
+				"type": "string",
+				"defaultValue": "AIzaSyDpMzOD20awzJOE-7PNfuEpjfVz3qW44Gc"
+			},
+			"address": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://maps.googleapis.com/maps/api/geocode/json?",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		}
+	}
+}
