@@ -1,11 +1,8 @@
 {
 	"name": "google_api",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"parameters": {
-			"key": {
-				"type": "string",
-				"defaultValue": "AIzaSyDpMzOD20awzJOE-7PNfuEpjfVz3qW44Gc"
-			},
 			"address": {
 				"type": "string"
 			}
@@ -15,7 +12,13 @@
 		"typeProperties": {
 			"url": "https://maps.googleapis.com/maps/api/geocode/json?",
 			"enableServerCertificateValidation": true,
-			"authenticationType": "Anonymous"
+			"authenticationType": "Anonymous",
+			"authHeaders": {
+				"APIKey": {
+					"type": "SecureString",
+					"value": "**********"
+				}
+			}
 		}
 	}
 }
