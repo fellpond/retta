@@ -11,7 +11,17 @@
 		"typeProperties": {
 			"url": "@{concat('https://maps.googleapis.com/maps/api/geocode/json?key=',linkedService().key)}",
 			"enableServerCertificateValidation": true,
-			"authenticationType": "Anonymous"
+			"authenticationType": "Anonymous",
+			"authHeaders": {
+				"key": {
+					"type": "AzureKeyVaultSecret",
+					"store": {
+						"referenceName": "AzureKeyVaultRetta",
+						"type": "LinkedServiceReference"
+					},
+					"secretName": "AccuWeatherAPI"
+				}
+			}
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/linkedservices"
