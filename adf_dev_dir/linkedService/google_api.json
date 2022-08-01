@@ -4,7 +4,7 @@
 		"annotations": [],
 		"type": "RestService",
 		"typeProperties": {
-			"url": "https://maps.googleapis.com/maps/api/geocode/json?",
+			"url": "https://maps.googleapis.com/maps/api/geocode/json",
 			"enableServerCertificateValidation": true,
 			"authenticationType": "Anonymous"
 		}
