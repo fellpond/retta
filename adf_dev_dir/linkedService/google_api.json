@@ -1,6 +1,7 @@
 {
 	"name": "google_api",
 	"properties": {
+		"type": "RestService",
 		"parameters": {
 			"key": {
 				"type": "AzureKeyVaultSecret",
@@ -12,12 +13,10 @@
 			}
 		},
 		"annotations": [],
-		"type": "RestService",
 		"typeProperties": {
 			"url": "@{concat('https://maps.googleapis.com/maps/api/geocode/json?key=',linkedService().key)}",
 			"enableServerCertificateValidation": true,
 			"authenticationType": "Anonymous"
 		}
-	},
-	"type": "Microsoft.DataFactory/factories/linkedservices"
+	}
 }
