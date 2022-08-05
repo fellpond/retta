@@ -2,7 +2,7 @@
 	"name": "WeatherSinkJson",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "WeatherBlobStorage",
+			"referenceName": "AzureDataLakeStorage1",
 			"type": "LinkedServiceReference"
 		},
 		"folder": {
@@ -12,13 +12,9 @@
 		"type": "Json",
 		"typeProperties": {
 			"location": {
-				"type": "AzureBlobStorageLocation",
-				"fileName": {
-					"value": "@concat('weather_inbound_',formatDatetime(utcnow(),'MMddyyyhh'),'.json')",
-					"type": "Expression"
-				},
-				"folderPath": "inbound",
-				"container": "weather-raw"
+				"type": "AzureBlobFSLocation",
+				"folderPath": "weather/input",
+				"fileSystem": "bronze"
 			}
 		},
 		"schema": {}
