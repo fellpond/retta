@@ -1,6 +1,16 @@
 {
 	"name": "Accuweather",
 	"properties": {
+		"parameters": {
+			"apikey": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVaultRetta",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "AccuWeatherAPI"
+			}
+		},
 		"annotations": [],
 		"type": "RestService",
 		"typeProperties": {
