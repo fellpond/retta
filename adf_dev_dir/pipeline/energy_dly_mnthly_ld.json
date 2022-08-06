@@ -77,6 +77,49 @@
 					"referenceName": "RettaDBrcks",
 					"type": "LinkedServiceReference"
 				}
+			},
+			{
+				"name": "Email_Notifier",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Extract daily and monthly data",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Email_Notifier",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"EmailTo": "prayank.sharma"
+					}
+				}
+			},
+			{
+				"name": "Email_Notifier1",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Parse Transform and Load",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Email_Notifier",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
 			}
 		],
 		"variables": {
