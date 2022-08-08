@@ -1,18 +1,8 @@
 {
 	"name": "Accuweather",
 	"properties": {
-		"parameters": {
-			"apikey": {
-				"type": "AzureKeyVaultSecret",
-				"store": {
-					"referenceName": "AzureKeyVaultRetta",
-					"type": "LinkedServiceReference"
-				},
-				"secretName": "AccuWeatherAPI"
-			}
-		},
-		"annotations": [],
 		"type": "RestService",
+		"annotations": [],
 		"typeProperties": {
 			"url": "http://dataservice.accuweather.com/currentconditions/v1/",
 			"enableServerCertificateValidation": true,
