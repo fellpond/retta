@@ -136,7 +136,10 @@
 							"value": "@concat(pipeline()?.TriggeredByPipelineName, ' : Metri API Rest Call')",
 							"type": "Expression"
 						},
-						"ErrorMessage": "Metri API failed"
+						"ErrorMessage": {
+							"value": "@activity('Extract daily and monthly data').output.errors[0].Message",
+							"type": "Expression"
+						}
 					}
 				}
 			}
