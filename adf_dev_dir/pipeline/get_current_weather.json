@@ -1,0 +1,9 @@
+{
+	"name": "get_current_weather",
+	"properties": {
+		"folder": {
+			"name": "accuweather"
+		},
+		"annotations": []
+	}
+}
