@@ -88,4 +88,5 @@ mnthly_ref.write.format('delta').mode('overwrite').option('path', mnthly_ref_pat
 
 # COMMAND ----------
 
-cf.archiveProcess(dbutils, '/mnt/bronze/energy_dly_mnthly/input/','/mnt/bronze/energy_dly_mnthly/archive')
+import common.common_functions as cf
+cf.archiveProcess(dbutils, '/mnt/bronze/energy_dly_mnthly/input/','/mnt/bronze/energy_dly_mnthly/archive/test/')

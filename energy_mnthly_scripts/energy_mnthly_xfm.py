@@ -26,7 +26,7 @@ energy_mnthly_ref = spark.table('retta.energy_monthly_ref').filter("mnthly_sum i
 
 display(energy_mnthly_ref.filter('ean=20003317'))
 
-display(energy_mnthly_stg_df.filter('ean=20003317'))
+display(energy_mnthly_stg_df.filter('ean=20003317').orderBy('ean','mnthly_end_dt' ))
 
 # COMMAND ----------
 

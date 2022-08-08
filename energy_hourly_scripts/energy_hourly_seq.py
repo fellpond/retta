@@ -11,5 +11,5 @@ dbutils.notebook.run('./energy_hourly_parser', 6000)
  
 
 #Archive input files --parameterize it later
-#cf.archiveProcess(dbutils, config['input'],config['archive'])
-dbutils.notebook.run('./archive_src', 6000, {'input_dir': '/mnt/energy_dly_in/input/', 'archive_dir':'/mnt/energy_dly_in/Archive/'})
+cf.archiveProcess(dbutils, config['input'],config['archive'])
+# dbutils.notebook.run('./archive_src', 6000, {'input_dir': '/mnt/energy_dly_in/input/', 'archive_dir':'/mnt/energy_dly_in/Archive/'})

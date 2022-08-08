@@ -11,8 +11,10 @@ df = spark.read.csv('/mnt/bronze/sharepoint/input/Meter_Relationship/*', header=
 df_final = df.select(list(config.keys()))
 #print(config.keys())
 
-df_final =df_final.withColumn('Editor', F.get_json_object(F.col("Editor"), "$.Email"))
-df_final =df_final.withColumn('Author', F.get_json_object(F.col("Author"), "$.Email"))
+df_final = cf.check_for_json_value(df_final)
+
+# df_final =df_final.withColumn('Editor', F.get_json_object(F.col("Editor"), "$.Email"))
+# df_final =df_final.withColumn('Author', F.get_json_object(F.col("Author"), "$.Email"))
 
 #rename columns
 df_final = cf.df_column_rename(df_final,config)

@@ -6,7 +6,7 @@ enrgyHrlyPath='/mnt/bronze/energy_hrly/input/energy_hrly_*'
 
 
 
-enrgyHrly_df = cf.readJson(enrgyHrlyPath)
+enrgyHrly_df = cf.readJson(spark, enrgyHrlyPath)
 
 df=enrgyHrly_df.persist()
 
@@ -46,8 +46,8 @@ df_offset = df.select('offset').dropDuplicates()
 target='/mnt/bronze/energy_hrly/config/hourly_offset.csv'
 offset_loc='/mnt/bronze/energy_hrly/config/offset.csv'
 
-df.write.mode('overwrite').option('path', target).format('csv').save()
-[dbutils.fs.mv(item[0], target) for items in dbutils.fs.ls(offset_loc) if (items[0].endswith('csv'))]
+df_offset.write.mode('overwrite').option('path', target).option('header',True).format('csv').save()
+[dbutils.fs.mv(items[0], offset_loc) for items in dbutils.fs.ls(target) if (items[0].endswith('csv'))]
 
 # COMMAND ----------
 
@@ -55,5 +55,5 @@ df.write.mode('overwrite').option('path', target).format('csv').save()
 hourly_stg = '/mnt/silver/energy_hrly'
 df.write.format('delta')\
         .mode('append')\
-        .option('path', hourly_stg)
+        .option('path', hourly_stg)\
         .saveAsTable('retta.energy_hourly')
