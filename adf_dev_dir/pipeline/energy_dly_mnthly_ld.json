@@ -110,7 +110,7 @@
 				}
 			},
 			{
-				"name": "Execute Pipeline1",
+				"name": "Emailm Notifier",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
