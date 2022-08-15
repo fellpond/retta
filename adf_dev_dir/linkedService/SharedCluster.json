@@ -1,0 +1,19 @@
+{
+	"name": "SharedCluster",
+	"properties": {
+		"annotations": [],
+		"type": "AzureDatabricks",
+		"typeProperties": {
+			"domain": "https://adb-1558361433928880.0.azuredatabricks.net",
+			"accessToken": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVaultRetta",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "DatabricksToken"
+			},
+			"existingClusterId": "0619-160955-oyx2izwq"
+		}
+	}
+}
