@@ -9,6 +9,15 @@
 					"referenceName": "energy_dly_mnthly_ld",
 					"type": "PipelineReference"
 				}
+			},
+			{
+				"pipelineReference": {
+					"referenceName": "energy_dly_mnthly_ld_copy1",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"email": "prayank.sharma@routadigital.com"
+				}
 			}
 		],
 		"type": "ScheduleTrigger",
