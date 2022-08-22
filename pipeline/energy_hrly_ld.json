@@ -1,0 +1,130 @@
+{
+	"name": "energy_hrly_ld",
+	"properties": {
+		"activities": [
+			{
+				"name": "Extract hourly data",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "fetch last offset",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "POST",
+						"requestBody": {
+							"value": "@concat('{\"offset:\"','\"',activity('fetch last offset').output.firstRow.offset,'\"}')",
+							"type": "Expression"
+						},
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "metryDS",
+						"type": "DatasetReference",
+						"parameters": {
+							"endpoint": "streams/62bd9c2aacea0e68c708393c/consume"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "energy_hrly_stg",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "fetch last offset",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "hourlyOffset",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Parse Transform and Load",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Extract hourly data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Repos/prayank.sharma@routadigital.com/retta/energy_hourly_scripts/energy_hourly_seq"
+				},
+				"linkedServiceName": {
+					"referenceName": "RettaDBrcks",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"folder": {
+			"name": "energy_pipelines"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-07-28T04:13:16Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

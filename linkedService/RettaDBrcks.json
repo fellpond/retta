@@ -1,0 +1,28 @@
+{
+	"name": "RettaDBrcks",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureDatabricks",
+		"typeProperties": {
+			"domain": "https://adb-1558361433928880.0.azuredatabricks.net",
+			"accessToken": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVaultRetta",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "DatabricksToken"
+			},
+			"newClusterNodeType": "Standard_DS3_v2",
+			"newClusterNumOfWorker": "1:2",
+			"newClusterSparkEnvVars": {
+				"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+			},
+			"newClusterVersion": "10.3.x-scala2.12",
+			"newClusterInitScripts": [],
+			"newClusterDriverNodeType": "Standard_DS3_v2",
+			"clusterOption": "Autoscaling"
+		}
+	}
+}

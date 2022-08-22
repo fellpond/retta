@@ -1,0 +1,11 @@
+{
+	"name": "AzureKeyVaultRetta",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://rettakvault.vault.azure.net/"
+		}
+	}
+}

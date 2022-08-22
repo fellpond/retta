@@ -1,0 +1,27 @@
+{
+	"name": "metryDS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "metryIntg",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"endpoint": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "energy_datasets/api_ds"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@dataset().endpoint",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
