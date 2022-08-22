@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "getKeyValut",
+				"name": "getKeyVault",
 				"type": "WebActivity",
 				"dependsOn": [],
 				"policy": {
@@ -28,7 +28,7 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "getKeyValut",
+						"activity": "getKeyVault",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -128,7 +128,7 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"loc_key": {
-											"value": "@concat(item().loc_key, '?details=true&apikey=', activity('Web1').output.value)",
+											"value": "@concat(item().loc_key, '?details=true&apikey=', activity('getKeyVault').output.value)",
 											"type": "Expression"
 										}
 									}
