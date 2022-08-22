@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
 		},
+		"AzureDataLakeStorage2_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage2'"
+		},
 		"AzureFunction1_functionKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'functionKey' of 'AzureFunction1'"
@@ -28,6 +32,10 @@
 			"defaultValue": "http://dataservice.accuweather.com/currentconditions/v1/"
 		},
 		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://rettadatalake.dfs.core.windows.net/"
+		},
+		"AzureDataLakeStorage2_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://rettadatalake.dfs.core.windows.net/"
 		},
@@ -107,7 +115,8 @@
 				"folder": {
 					"name": "Misc"
 				},
-				"annotations": []
+				"annotations": [],
+				"lastPublishTime": "2022-08-08T01:57:11Z"
 			},
 			"dependsOn": []
 		},
@@ -168,64 +177,6 @@
 						]
 					},
 					{
-						"name": "Parse Transform and Load",
-						"type": "DatabricksNotebook",
-						"dependsOn": [
-							{
-								"activity": "Extract daily and monthly data",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"notebookPath": "/Repos/prayank.sharma@routadigital.com/retta/energy_dly_scripts/energy_dly_seq"
-						},
-						"linkedServiceName": {
-							"referenceName": "RettaDBrcks",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "Email_Notifier1",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Parse Transform and Load",
-								"dependencyConditions": [
-									"Failed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "Email_Notifier",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"EmailTo": "prayank.sharma@routadigital.com",
-								"Activity": {
-									"value": "@concat(pipeline().Pipeline, ' : Databricks ETL')",
-									"type": "Expression"
-								},
-								"ErrorMessage": {
-									"value": "@activity('Parse Transform and Load').output",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
 						"name": "Execute Pipeline1",
 						"type": "ExecutePipeline",
 						"dependsOn": [
@@ -255,6 +206,36 @@
 								"ErrorMessage": "Metri API failed"
 							}
 						}
+					},
+					{
+						"name": "parse and transform",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Extract daily and monthly data",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
+							"method": "POST",
+							"headers": {
+								"Authorization": "Bearer dapiadd302a095a7c76e4f264fb81cc37060-2"
+							},
+							"body": {
+								"job_id": 953228974256009
+							}
+						}
 					}
 				],
 				"policy": {
@@ -276,12 +257,12 @@
 				"folder": {
 					"name": "energy_pipelines"
 				},
-				"annotations": []
+				"annotations": [],
+				"lastPublishTime": "2022-08-08T01:57:13Z"
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/metryDS')]",
 				"[concat(variables('factoryId'), '/datasets/energy_dly_mnthly')]",
-				"[concat(variables('factoryId'), '/linkedServices/RettaDBrcks')]",
 				"[concat(variables('factoryId'), '/pipelines/Email_Notifier')]"
 			]
 		},
@@ -418,13 +399,187 @@
 				"folder": {
 					"name": "energy_pipelines"
 				},
-				"annotations": []
+				"annotations": [],
+				"lastPublishTime": "2022-07-28T04:13:16Z"
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/metryDS')]",
 				"[concat(variables('factoryId'), '/datasets/energy_hrly_stg')]",
 				"[concat(variables('factoryId'), '/datasets/hourlyOffset')]",
 				"[concat(variables('factoryId'), '/linkedServices/RettaDBrcks')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/get_current_weather')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "getKeyVault",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://rettakvault.vault.azure.net/secrets/AccuWeatherAPI?api-version=7.3",
+							"method": "GET",
+							"headers": {},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://vault.azure.net"
+							}
+						}
+					},
+					{
+						"name": "Lookup  sites",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "getKeyVault",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "site_loc_key",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach site",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup  sites",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup  sites').output.value",
+								"type": "Expression"
+							},
+							"isSequential": false,
+							"activities": [
+								{
+									"name": "Copy data1",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"additionalColumns": [
+												{
+													"name": "site_id",
+													"value": {
+														"value": "@item().site_id",
+														"type": "Expression"
+													}
+												}
+											],
+											"httpRequestTimeout": "00:01:40",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET",
+											"paginationRules": {
+												"supportRFC5988": "true"
+											}
+										},
+										"sink": {
+											"type": "JsonSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "JsonWriteSettings"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "WeatherDS",
+											"type": "DatasetReference",
+											"parameters": {
+												"loc_key": {
+													"value": "@concat(item().loc_key, '?details=true&apikey=', activity('getKeyVault').output.value)",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "WeatherSinkJson",
+											"type": "DatasetReference",
+											"parameters": {
+												"file_name": {
+													"value": "@concat('weather_',item().site_id, utcNow('yyyyMMddhh'))",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "accuweather"
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-08-08T01:57:13Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/site_loc_key')]",
+				"[concat(variables('factoryId'), '/datasets/WeatherDS')]",
+				"[concat(variables('factoryId'), '/datasets/WeatherSinkJson')]"
 			]
 		},
 		{
@@ -684,6 +839,47 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/site_loc_key')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "accuweather"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "site_loc.csv",
+						"folderPath": "sharepoint/config",
+						"fileSystem": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "site_id",
+						"type": "String"
+					},
+					{
+						"name": "loc_key",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Accuweather')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -710,6 +906,23 @@
 					"accountKey": {
 						"type": "SecureString",
 						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage2')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('AzureDataLakeStorage2_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('AzureDataLakeStorage2_accountKey')]"
 					}
 				}
 			},
@@ -977,159 +1190,18 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/get_current_weather')]",
+			"name": "[concat(parameters('factoryName'), '/loadSharepointLists')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "Web1",
-						"type": "WebActivity",
+						"name": "Wait1",
+						"type": "Wait",
 						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
 						"userProperties": [],
 						"typeProperties": {
-							"url": "https://rettakvault.vault.azure.net/secrets/AccuWeatherAPI?api-version=7.3",
-							"method": "GET",
-							"headers": {},
-							"authentication": {
-								"type": "MSI",
-								"resource": "https://vault.azure.net"
-							}
-						}
-					},
-					{
-						"name": "Lookup1",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Web1",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobFSReadSettings",
-									"recursive": true,
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"dataset": {
-								"referenceName": "site_loc_key",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": false
-						}
-					},
-					{
-						"name": "ForEach1",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "Lookup1",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('Lookup1').output.value",
-								"type": "Expression"
-							},
-							"isSequential": false,
-							"activities": [
-								{
-									"name": "Copy data1",
-									"type": "Copy",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "7.00:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "RestSource",
-											"additionalColumns": [
-												{
-													"name": "site_id",
-													"value": {
-														"value": "@item().site_id",
-														"type": "Expression"
-													}
-												}
-											],
-											"httpRequestTimeout": "00:01:40",
-											"requestInterval": "00.00:00:00.010",
-											"requestMethod": "GET",
-											"paginationRules": {
-												"supportRFC5988": "true"
-											}
-										},
-										"sink": {
-											"type": "JsonSink",
-											"storeSettings": {
-												"type": "AzureBlobFSWriteSettings"
-											},
-											"formatSettings": {
-												"type": "JsonWriteSettings"
-											}
-										},
-										"enableStaging": false
-									},
-									"inputs": [
-										{
-											"referenceName": "WeatherDS",
-											"type": "DatasetReference",
-											"parameters": {
-												"loc_key": {
-													"value": "@concat(item().loc_key, '?details=true&apikey=', activity('Web1').output.value)",
-													"type": "Expression"
-												}
-											}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "WeatherSinkJson",
-											"type": "DatasetReference",
-											"parameters": {
-												"file_name": {
-													"value": "@concat('weather_',item().site_id, utcNow('yyyyMMddhh'))",
-													"type": "Expression"
-												}
-											}
-										}
-									]
-								}
-							]
+							"waitTimeInSeconds": 1
 						}
 					}
 				],
@@ -1138,56 +1210,11 @@
 					"cancelAfter": {}
 				},
 				"folder": {
-					"name": "accuweather"
+					"name": "sharepoint"
 				},
 				"annotations": []
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/site_loc_key')]",
-				"[concat(variables('factoryId'), '/datasets/WeatherDS')]",
-				"[concat(variables('factoryId'), '/datasets/WeatherSinkJson')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/site_loc_key')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "accuweather"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": "site_loc.csv",
-						"folderPath": "sharepoint/config",
-						"fileSystem": "bronze"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "site_id",
-						"type": "String"
-					},
-					{
-						"name": "loc_key",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
-			]
+			"dependsOn": []
 		}
 	]
 }

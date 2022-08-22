@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
 		},
+		"AzureDataLakeStorage2_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage2'"
+		},
 		"AzureFunction1_functionKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'functionKey' of 'AzureFunction1'"
@@ -28,6 +32,10 @@
 			"defaultValue": "http://dataservice.accuweather.com/currentconditions/v1/"
 		},
 		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://rettadatalake.dfs.core.windows.net/"
+		},
+		"AzureDataLakeStorage2_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://rettadatalake.dfs.core.windows.net/"
 		},
@@ -85,6 +93,9 @@
 					"AzureDataLakeStorage1_accountKey": {
 						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
 					},
+					"AzureDataLakeStorage2_accountKey": {
+						"value": "[parameters('AzureDataLakeStorage2_accountKey')]"
+					},
 					"AzureFunction1_functionKey": {
 						"value": "[parameters('AzureFunction1_functionKey')]"
 					},
@@ -100,6 +111,9 @@
 					"AzureDataLakeStorage1_properties_typeProperties_url": {
 						"value": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]"
 					},
+					"AzureDataLakeStorage2_properties_typeProperties_url": {
+						"value": "[parameters('AzureDataLakeStorage2_properties_typeProperties_url')]"
+					},
 					"AzureFunction1_properties_typeProperties_functionAppUrl": {
 						"value": "[parameters('AzureFunction1_properties_typeProperties_functionAppUrl')]"
 					},
@@ -111,12 +125,6 @@
 					},
 					"WeatherAPIParam_properties_typeProperties_url": {
 						"value": "[parameters('WeatherAPIParam_properties_typeProperties_url')]"
-					},
-					"google_api_properties_typeProperties_url": {
-						"value": "[parameters('google_api_properties_typeProperties_url')]"
-					},
-					"metryIntg_properties_typeProperties_url": {
-						"value": "[parameters('metryIntg_properties_typeProperties_url')]"
 					}
 				}
 			},
@@ -135,6 +143,12 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"google_api_properties_typeProperties_url": {
+						"value": "[parameters('google_api_properties_typeProperties_url')]"
+					},
+					"metryIntg_properties_typeProperties_url": {
+						"value": "[parameters('metryIntg_properties_typeProperties_url')]"
 					}
 				}
 			},

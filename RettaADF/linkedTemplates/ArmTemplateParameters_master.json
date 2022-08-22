@@ -8,6 +8,9 @@
 		"AzureDataLakeStorage1_accountKey": {
 			"value": ""
 		},
+		"AzureDataLakeStorage2_accountKey": {
+			"value": ""
+		},
 		"AzureFunction1_functionKey": {
 			"value": ""
 		},
@@ -21,6 +24,9 @@
 			"value": "http://dataservice.accuweather.com/currentconditions/v1/"
 		},
 		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"value": "https://rettadatalake.dfs.core.windows.net/"
+		},
+		"AzureDataLakeStorage2_properties_typeProperties_url": {
 			"value": "https://rettadatalake.dfs.core.windows.net/"
 		},
 		"AzureFunction1_properties_typeProperties_functionAppUrl": {

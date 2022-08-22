@@ -6,6 +6,14 @@
 			"type": "string",
 			"metadata": "Data Factory name",
 			"defaultValue": "RettaADF"
+		},
+		"google_api_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "@{concat('https://maps.googleapis.com/maps/api/geocode/json?key=',linkedService().key)}"
+		},
+		"metryIntg_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://app.metry.io/api/v2/"
 		}
 	},
 	"variables": {
@@ -13,70 +21,82 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/site_loc_key')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
+			"name": "[concat(parameters('factoryName'), '/RettaDBrcks')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "accuweather"
-				},
 				"annotations": [],
-				"type": "DelimitedText",
+				"type": "AzureDatabricks",
 				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": "site_loc.csv",
-						"folderPath": "sharepoint/config",
-						"fileSystem": "bronze"
+					"domain": "https://adb-1558361433928880.0.azuredatabricks.net",
+					"accessToken": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzureKeyVaultRetta",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "DatabricksToken"
 					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "site_id",
-						"type": "String"
+					"newClusterNodeType": "Standard_DS3_v2",
+					"newClusterNumOfWorker": "1:2",
+					"newClusterSparkEnvVars": {
+						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
 					},
-					{
-						"name": "loc_key",
-						"type": "String"
-					}
-				]
+					"newClusterVersion": "10.3.x-scala2.12",
+					"newClusterInitScripts": [],
+					"newClusterDriverNodeType": "Standard_DS3_v2",
+					"clusterOption": "Autoscaling"
+				}
 			},
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/metryDS')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
+			"name": "[concat(parameters('factoryName'), '/google_api')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "metryIntg",
-					"type": "LinkedServiceReference"
-				},
+				"type": "RestService",
 				"parameters": {
-					"endpoint": {
-						"type": "string"
+					"key": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzureKeyVaultRetta",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "google-api"
 					}
-				},
-				"folder": {
-					"name": "energy_datasets/api_ds"
 				},
 				"annotations": [],
-				"type": "RestResource",
 				"typeProperties": {
-					"relativeUrl": {
-						"value": "@dataset().endpoint",
-						"type": "Expression"
+					"url": "[parameters('google_api_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/metryIntg')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('metryIntg_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous",
+					"authHeaders": {
+						"Authorization": {
+							"type": "AzureKeyVaultSecret",
+							"store": {
+								"referenceName": "AzureKeyVaultRetta",
+								"type": "LinkedServiceReference"
+							},
+							"secretName": "metritoken"
+						}
 					}
-				},
-				"schema": []
+				}
 			},
 			"dependsOn": []
 		},
@@ -87,7 +107,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Web1",
+						"name": "getKeyVault",
 						"type": "WebActivity",
 						"dependsOn": [],
 						"policy": {
@@ -109,11 +129,11 @@
 						}
 					},
 					{
-						"name": "Lookup1",
+						"name": "Lookup  sites",
 						"type": "Lookup",
 						"dependsOn": [
 							{
-								"activity": "Web1",
+								"activity": "getKeyVault",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -148,11 +168,11 @@
 						}
 					},
 					{
-						"name": "ForEach1",
+						"name": "ForEach site",
 						"type": "ForEach",
 						"dependsOn": [
 							{
-								"activity": "Lookup1",
+								"activity": "Lookup  sites",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -161,7 +181,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"items": {
-								"value": "@activity('Lookup1').output.value",
+								"value": "@activity('Lookup  sites').output.value",
 								"type": "Expression"
 							},
 							"isSequential": false,
@@ -214,7 +234,7 @@
 											"type": "DatasetReference",
 											"parameters": {
 												"loc_key": {
-													"value": "@concat(item().loc_key, '?details=true&apikey=', activity('Web1').output.value)",
+													"value": "@concat(item().loc_key, '?details=true&apikey=', activity('getKeyVault').output.value)",
 													"type": "Expression"
 												}
 											}
@@ -244,10 +264,40 @@
 				"folder": {
 					"name": "accuweather"
 				},
-				"annotations": []
+				"annotations": [],
+				"lastPublishTime": "2022-08-08T01:57:13Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/metryDS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "metryIntg",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"endpoint": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "energy_datasets/api_ds"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@dataset().endpoint",
+						"type": "Expression"
+					}
+				},
+				"schema": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/site_loc_key')]"
+				"[concat(variables('factoryId'), '/linkedServices/metryIntg')]"
 			]
 		},
 		{
@@ -307,64 +357,6 @@
 						]
 					},
 					{
-						"name": "Parse Transform and Load",
-						"type": "DatabricksNotebook",
-						"dependsOn": [
-							{
-								"activity": "Extract daily and monthly data",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"notebookPath": "/Repos/prayank.sharma@routadigital.com/retta/energy_dly_scripts/energy_dly_seq"
-						},
-						"linkedServiceName": {
-							"referenceName": "RettaDBrcks",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "Email_Notifier1",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Parse Transform and Load",
-								"dependencyConditions": [
-									"Failed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "Email_Notifier",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"EmailTo": "prayank.sharma@routadigital.com",
-								"Activity": {
-									"value": "@concat(pipeline().Pipeline, ' : Databricks ETL')",
-									"type": "Expression"
-								},
-								"ErrorMessage": {
-									"value": "@activity('Parse Transform and Load').output",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
 						"name": "Execute Pipeline1",
 						"type": "ExecutePipeline",
 						"dependsOn": [
@@ -394,6 +386,36 @@
 								"ErrorMessage": "Metri API failed"
 							}
 						}
+					},
+					{
+						"name": "parse and transform",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Extract daily and monthly data",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
+							"method": "POST",
+							"headers": {
+								"Authorization": "Bearer dapiadd302a095a7c76e4f264fb81cc37060-2"
+							},
+							"body": {
+								"job_id": 953228974256009
+							}
+						}
 					}
 				],
 				"policy": {
@@ -415,7 +437,8 @@
 				"folder": {
 					"name": "energy_pipelines"
 				},
-				"annotations": []
+				"annotations": [],
+				"lastPublishTime": "2022-08-08T01:57:13Z"
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/metryDS')]"
@@ -554,10 +577,12 @@
 				"folder": {
 					"name": "energy_pipelines"
 				},
-				"annotations": []
+				"annotations": [],
+				"lastPublishTime": "2022-07-28T04:13:16Z"
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/metryDS')]"
+				"[concat(variables('factoryId'), '/datasets/metryDS')]",
+				"[concat(variables('factoryId'), '/linkedServices/RettaDBrcks')]"
 			]
 		},
 		{
