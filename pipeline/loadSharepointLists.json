@@ -1,0 +1,9 @@
+{
+	"name": "loadSharepointLists",
+	"properties": {
+		"folder": {
+			"name": "sharepoint"
+		},
+		"annotations": []
+	}
+}

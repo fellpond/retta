@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Web1",
+				"name": "getKeyValut",
 				"type": "WebActivity",
 				"dependsOn": [],
 				"policy": {
@@ -24,11 +24,11 @@
 				}
 			},
 			{
-				"name": "Lookup1",
+				"name": "Lookup  sites",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "Web1",
+						"activity": "getKeyValut",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -62,11 +62,11 @@
 				}
 			},
 			{
-				"name": "ForEach1",
+				"name": "ForEach site",
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Lookup1",
+						"activity": "Lookup  sites",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -75,7 +75,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Lookup1').output.value",
+						"value": "@activity('Lookup  sites').output.value",
 						"type": "Expression"
 					},
 					"isSequential": false,

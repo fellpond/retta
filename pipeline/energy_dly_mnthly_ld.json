@@ -52,64 +52,6 @@
 				]
 			},
 			{
-				"name": "Parse Transform and Load",
-				"type": "DatabricksNotebook",
-				"dependsOn": [
-					{
-						"activity": "Extract daily and monthly data",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"notebookPath": "/Repos/prayank.sharma@routadigital.com/retta/energy_dly_scripts/energy_dly_seq"
-				},
-				"linkedServiceName": {
-					"referenceName": "RettaDBrcks",
-					"type": "LinkedServiceReference"
-				}
-			},
-			{
-				"name": "Email_Notifier1",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Parse Transform and Load",
-						"dependencyConditions": [
-							"Failed"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "Email_Notifier",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"EmailTo": "prayank.sharma@routadigital.com",
-						"Activity": {
-							"value": "@concat(pipeline().Pipeline, ' : Databricks ETL')",
-							"type": "Expression"
-						},
-						"ErrorMessage": {
-							"value": "@activity('Parse Transform and Load').output",
-							"type": "Expression"
-						}
-					}
-				}
-			},
-			{
 				"name": "Execute Pipeline1",
 				"type": "ExecutePipeline",
 				"dependsOn": [
@@ -137,6 +79,36 @@
 							"type": "Expression"
 						},
 						"ErrorMessage": "Metri API failed"
+					}
+				}
+			},
+			{
+				"name": "parse and transform",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Extract daily and monthly data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
+					"method": "POST",
+					"headers": {
+						"Authorization": "Bearer dapiadd302a095a7c76e4f264fb81cc37060-2"
+					},
+					"body": {
+						"job_id": 953228974256009
 					}
 				}
 			}
