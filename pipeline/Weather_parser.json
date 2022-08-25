@@ -21,6 +21,37 @@
 					"referenceName": "RettaDBrcks",
 					"type": "LinkedServiceReference"
 				}
+			},
+			{
+				"name": "Email_notification",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Weather_parser",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Email_Notifier",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"EmailTo": "swathi.reddy@routadigital.com, prayank.sharma@routadigital.com",
+						"Activity": {
+							"value": "@activity('Weather_parser').output",
+							"type": "Expression"
+						},
+						"ErrorMessage": {
+							"value": "@activity('Weather_parser').output",
+							"type": "Expression"
+						}
+					}
+				}
 			}
 		],
 		"folder": {
