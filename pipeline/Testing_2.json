@@ -123,7 +123,7 @@
 			},
 			"DatabricksWorkspaceID": {
 				"type": "string",
-				"defaultValue": "1558361433928880#job/350589294007009"
+				"defaultValue": "adb-1558361433928880"
 			},
 			"Waitsec": {
 				"type": "int",
