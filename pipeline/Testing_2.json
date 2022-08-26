@@ -15,18 +15,14 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"url": {
-						"value": "@concat('pipeline().parameters.DatsbricksWorkspaceID','.azuredatabricks.net/api/2.1/jobs/run-now')",
-						"type": "Expression"
-					},
+					"url": "https://adb-1558361433928880.0.azuredatabricks.net/?o=1558361433928880#job/list",
 					"method": "POST",
+					"headers": {
+						"Authorization": "Bearer dapiadd302a095a7c76e4f264fb81cc37060-2"
+					},
 					"body": {
 						"value": "@concat('{\"job_id\":',pipeline().parameters.JobID,'}')",
 						"type": "Expression"
-					},
-					"authentication": {
-						"type": "MSI",
-						"resource": "2ff814a6-3304-4ab8-85cb-cd0e6f879c1d"
 					}
 				}
 			},
