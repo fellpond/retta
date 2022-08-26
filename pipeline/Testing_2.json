@@ -1,0 +1,100 @@
+{
+	"name": "Testing_2",
+	"properties": {
+		"activities": [
+			{
+				"name": "Run Now Api",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat('pipeline().parameters.DatsbricksWorkspaceID','.azuredatabricks.net/api/2.1/jobs/run-now')",
+						"type": "Expression"
+					},
+					"method": "POST",
+					"body": {
+						"value": "@concat('{\"job_id\":',pipeline().parameters.JobID,'}')",
+						"type": "Expression"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "2ff814a6-3304-4ab8-85cb-cd0e6f879c1d"
+					}
+				}
+			},
+			{
+				"name": "Until1",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "Run Now Api",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@not(equals(variables('JobStatus'),'Running'))",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Web1",
+							"type": "WebActivity",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"url": {
+									"value": "@concat('https://',pipeline().parameters.DatabricksWorkspaceID,'.azuredatabricks.net/api/2.1/jobs/runs/get?run_id=',activity('Run Now Api').output.run_id)",
+									"type": "Expression"
+								}
+							}
+						}
+					],
+					"timeout": "7.00:00:00"
+				}
+			}
+		],
+		"parameters": {
+			"JobID": {
+				"type": "string",
+				"defaultValue": "350589294007009"
+			},
+			"DatsbricksWorkspaceID": {
+				"type": "string",
+				"defaultValue": "1558361433928880#job/350589294007009"
+			},
+			"Waitsec": {
+				"type": "int",
+				"defaultValue": 30
+			}
+		},
+		"variables": {
+			"JobStatus": {
+				"type": "String",
+				"defaultValue": "Running"
+			}
+		},
+		"folder": {
+			"name": "sharepoint"
+		},
+		"annotations": []
+	}
+}
