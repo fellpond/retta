@@ -49,7 +49,7 @@
 					},
 					"activities": [
 						{
-							"name": "Web1",
+							"name": "Check API",
 							"type": "WebActivity",
 							"dependsOn": [],
 							"policy": {
@@ -64,6 +64,50 @@
 								"url": {
 									"value": "@concat('https://',pipeline().parameters.DatabricksWorkspaceID,'.azuredatabricks.net/api/2.1/jobs/runs/get?run_id=',activity('Run Now Api').output.run_id)",
 									"type": "Expression"
+								},
+								"method": "GET",
+								"authentication": {
+									"type": "MSI",
+									"resource": "2ff814a6-3304-4ab8-85cb-cd0e6f879c1d"
+								}
+							}
+						},
+						{
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Check API",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "JobStatus",
+								"value": {
+									"value": "@if(\nor(\nequals(activity('Check API').output.state.life_cycle_state, 'PENDING'), equals(activity('Check API').output.state.life_cycle_state, 'RUNNING')\n),\n'Running',\nactivity('Check API').output.state.result_state\n)",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Wait to recheck API",
+							"type": "Wait",
+							"dependsOn": [
+								{
+									"activity": "Set variable1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": {
+									"value": "@pipeline().parameters.Waitsec",
+									"type": "Expression"
 								}
 							}
 						}
@@ -77,7 +121,7 @@
 				"type": "string",
 				"defaultValue": "350589294007009"
 			},
-			"DatsbricksWorkspaceID": {
+			"DatabricksWorkspaceID": {
 				"type": "string",
 				"defaultValue": "1558361433928880#job/350589294007009"
 			},

@@ -41,7 +41,7 @@
 					},
 					"waitOnCompletion": true,
 					"parameters": {
-						"EmailTo": "swathi.reddy@routadigital.com, prayank.sharma@routadigital.com",
+						"EmailTo": "swathi.reddy@routadigital.com",
 						"Activity": {
 							"value": "@activity('Weather_parser').output",
 							"type": "Expression"
