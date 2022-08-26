@@ -21,6 +21,37 @@
 					"referenceName": "RettaDBrcks",
 					"type": "LinkedServiceReference"
 				}
+			},
+			{
+				"name": "Email notification",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "sharepoint_stg_tgt_seq",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Email_Notifier",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"EmailTo": "swathi.reddy@routadigital.com,prayak.sharma@routadigital.com",
+						"Activity": {
+							"value": "@activity('sharepoint_stg_tgt_seq').output",
+							"type": "Expression"
+						},
+						"ErrorMessage": {
+							"value": "@activity('sharepoint_stg_tgt_seq').output",
+							"type": "Expression"
+						}
+					}
+				}
 			}
 		],
 		"folder": {
