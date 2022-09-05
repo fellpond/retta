@@ -1,5 +1,5 @@
 {
-	"name": "pipeline1",
+	"name": "All_data_ingestion",
 	"properties": {
 		"activities": [
 			{
@@ -18,6 +18,46 @@
 						"DatabricksWorkspaceID": "adb-1558361433928880",
 						"Waitsec": 30
 					}
+				}
+			},
+			{
+				"name": "Weather_api",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Sharepoint",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "get_current_weather",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Weather_parser",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Weather_api",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Weather_parser",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
 				}
 			}
 		],
