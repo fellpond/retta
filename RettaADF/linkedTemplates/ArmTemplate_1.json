@@ -21,6 +21,105 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/hourlyOffset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "energy_datasets/storage_ds"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "offset.csv",
+						"folderPath": "energy_hrly/config",
+						"fileSystem": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/site_loc_key')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "accuweather"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "site_loc.csv",
+						"folderPath": "sharepoint/config",
+						"fileSystem": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "site_id",
+						"type": "String"
+					},
+					{
+						"name": "loc_key",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RettaDBrcks')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "https://adb-1558361433928880.0.azuredatabricks.net",
+					"accessToken": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzureKeyVaultRetta",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "DatabricksToken"
+					},
+					"newClusterNodeType": "Standard_DS3_v2",
+					"newClusterNumOfWorker": "1:2",
+					"newClusterSparkEnvVars": {
+						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+					},
+					"newClusterVersion": "10.3.x-scala2.12",
+					"newClusterInitScripts": [],
+					"newClusterDriverNodeType": "Standard_DS3_v2",
+					"clusterOption": "Autoscaling"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/google_api')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -237,45 +336,9 @@
 				"annotations": [],
 				"lastPublishTime": "2022-08-08T01:57:13Z"
 			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/loadSharepointLists')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "sharepoint_stg_tgt_seq",
-						"type": "DatabricksNotebook",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"notebookPath": "/Repos/prayank.sharma@routadigital.com/retta/sharepoint/sharepoint_stg_tgt_seq"
-						},
-						"linkedServiceName": {
-							"referenceName": "RettaDBrcks",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"folder": {
-					"name": "sharepoint"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/site_loc_key')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/metryDS')]",
@@ -367,14 +430,7 @@
 					{
 						"name": "Execute Pipeline1",
 						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Extract daily and monthly data",
-								"dependencyConditions": [
-									"Failed"
-								]
-							}
-						],
+						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -553,14 +609,7 @@
 					{
 						"name": "Parse Transform and Load",
 						"type": "DatabricksNotebook",
-						"dependsOn": [
-							{
-								"activity": "Extract hourly data",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
+						"dependsOn": [],
 						"policy": {
 							"timeout": "7.00:00:00",
 							"retry": 0,
@@ -576,6 +625,36 @@
 							"referenceName": "RettaDBrcks",
 							"type": "LinkedServiceReference"
 						}
+					},
+					{
+						"name": "Energy_hourly_parser",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Extract hourly data",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
+							"method": "POST",
+							"headers": {
+								"Authorization": "Bearer dapiadd302a095a7c76e4f264fb81cc37060-2"
+							},
+							"body": {
+								"job_id": 733327385784331
+							}
+						}
 					}
 				],
 				"policy": {
@@ -589,38 +668,133 @@
 				"lastPublishTime": "2022-07-28T04:13:16Z"
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/metryDS')]"
+				"[concat(variables('factoryId'), '/datasets/metryDS')]",
+				"[concat(variables('factoryId'), '/datasets/hourlyOffset')]",
+				"[concat(variables('factoryId'), '/linkedServices/RettaDBrcks')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Sharepoint_data')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
+			"name": "[concat(parameters('factoryName'), '/All_data_ingestion')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
+				"activities": [
 					{
-						"pipelineReference": {
-							"referenceName": "loadSharepointLists",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
+						"name": "Sharepoint",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Testing_2",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"JobID": "350589294007009",
+								"DatabricksWorkspaceID": "adb-1558361433928880",
+								"Waitsec": 30
+							}
+						}
+					},
+					{
+						"name": "Weather_api",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Sharepoint",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "get_current_weather",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Weather_parser",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Weather_api",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Weather_parser",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Energy hourly",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Sharepoint",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "energy_hrly_ld",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Energy_daily",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Sharepoint",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "energy_dly_mnthly_ld",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2022-08-24T11:51:00Z",
-						"timeZone": "UTC",
-						"schedule": {}
-					}
-				}
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Ingestion_pipeline"
+				},
+				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/loadSharepointLists')]"
+				"[concat(variables('factoryId'), '/pipelines/get_current_weather')]",
+				"[concat(variables('factoryId'), '/pipelines/energy_hrly_ld')]",
+				"[concat(variables('factoryId'), '/pipelines/energy_dly_mnthly_ld')]"
 			]
 		},
 		{
