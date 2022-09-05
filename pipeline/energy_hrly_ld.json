@@ -95,14 +95,7 @@
 			{
 				"name": "Parse Transform and Load",
 				"type": "DatabricksNotebook",
-				"dependsOn": [
-					{
-						"activity": "Extract hourly data",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -117,6 +110,22 @@
 				"linkedServiceName": {
 					"referenceName": "RettaDBrcks",
 					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Energy_hourly_parser",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now"
 				}
 			}
 		],
