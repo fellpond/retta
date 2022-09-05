@@ -125,7 +125,11 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now"
+					"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
+					"method": "POST",
+					"body": {
+						"job_id": 733327385784331
+					}
 				}
 			}
 		],
