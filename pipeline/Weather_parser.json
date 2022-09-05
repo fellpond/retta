@@ -3,8 +3,8 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Weather_parser",
-				"type": "DatabricksNotebook",
+				"name": "weather_parse",
+				"type": "WebActivity",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -15,41 +15,13 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"notebookPath": "/Repos/prayank.sharma@routadigital.com/retta/weather/ext_weather_data"
-				},
-				"linkedServiceName": {
-					"referenceName": "RettaDBrcks",
-					"type": "LinkedServiceReference"
-				}
-			},
-			{
-				"name": "Email_notification",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Weather_parser",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "Email_Notifier",
-						"type": "PipelineReference"
+					"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
+					"method": "POST",
+					"headers": {
+						"Authorization": "Bearer dapiadd302a095a7c76e4f264fb81cc37060-2"
 					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"EmailTo": "swathi.reddy@routadigital.com",
-						"Activity": {
-							"value": "@activity('Weather_parser').output",
-							"type": "Expression"
-						},
-						"ErrorMessage": {
-							"value": "@activity('Weather_parser').output",
-							"type": "Expression"
-						}
+					"body": {
+						"job_id": 962589072713801
 					}
 				}
 			}
