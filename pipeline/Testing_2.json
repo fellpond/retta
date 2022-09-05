@@ -15,14 +15,13 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"url": "https://adb-1558361433928880.0.azuredatabricks.net/?o=1558361433928880#job/list",
+					"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
 					"method": "POST",
 					"headers": {
 						"Authorization": "Bearer dapiadd302a095a7c76e4f264fb81cc37060-2"
 					},
 					"body": {
-						"value": "@concat('{\"job_id\":',pipeline().parameters.JobID,'}')",
-						"type": "Expression"
+						"job_id": 350589294007009
 					}
 				}
 			},
