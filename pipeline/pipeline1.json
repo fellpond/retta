@@ -1,0 +1,29 @@
+{
+	"name": "pipeline1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Sharepoint",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Testing_2",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"JobID": "350589294007009",
+						"DatabricksWorkspaceID": "adb-1558361433928880",
+						"Waitsec": 30
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "Ingestion_pipeline"
+		},
+		"annotations": []
+	}
+}
