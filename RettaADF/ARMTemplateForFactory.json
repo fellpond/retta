@@ -331,7 +331,7 @@
 									"typeProperties": {
 										"variableName": "JobStatus",
 										"value": {
-											"value": "@if(\nor(\nequals(activity('Check API').output.state.life_cycle_state, 'PENDING'), equals(activity('Check API').output.state.life_cycle_state, 'RUNNING')\n),\n'Running',\n\nactivity('Check API').output.state.result_state\n)\n",
+											"value": "@if(\nor(\nequals(activity('Check API').output.state.life_cycle_state, 'PENDING'), equals(activity('Check API').output.state.life_cycle_state, 'RUNNING')\n),\n'Running',\nif(equals(activity('Check API').output.state.life_cycle_state,'FAILED'),'Failed',activity('Check API').output.state.result_state)\n)\n",
 											"type": "Expression"
 										}
 									}
