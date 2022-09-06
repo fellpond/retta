@@ -177,10 +177,8 @@
 											"type": "Expression"
 										},
 										"method": "GET",
-										"headers": {},
-										"authentication": {
-											"type": "MSI",
-											"resource": "2ff814a6-3304-4ab8-85cb-cd0e6f879c1d"
+										"headers": {
+											"Authorization": "Bearer dapiadd302a095a7c76e4f264fb81cc37060-2"
 										}
 									}
 								},
@@ -199,7 +197,7 @@
 									"typeProperties": {
 										"variableName": "JobStatus",
 										"value": {
-											"value": "@if(\nor(\nequals(activity('Check API').output.state.life_cycle_state, 'PENDING'), equals(activity('Check API').output.state.life_cycle_state, 'RUNNING')\n),\n'Running',\nactivity('Check API').output.state.result_state\n)",
+											"value": "@if(\nor(\nequals(activity('Check API').output.state.life_cycle_state, 'PENDING'), equals(activity('Check API').output.state.life_cycle_state, 'RUNNING')\n),\n'Running',\n\nactivity('Check API').output.state.result_state\n)\n",
 											"type": "Expression"
 										}
 									}
