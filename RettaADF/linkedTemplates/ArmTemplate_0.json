@@ -456,8 +456,7 @@
 						"interval": 1,
 						"startTime": "2022-08-24T11:51:00Z",
 						"endTime": "2022-08-26T00:49:17Z",
-						"timeZone": "UTC",
-						"schedule": {}
+						"timeZone": "UTC"
 					}
 				}
 			},
