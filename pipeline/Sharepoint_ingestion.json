@@ -1,5 +1,5 @@
 {
-	"name": "Testing_2",
+	"name": "Sharepoint_ingestion",
 	"properties": {
 		"activities": [
 			{
@@ -57,7 +57,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"url": {
-									"value": "@concat('https://',pipeline().parameters.DatabricksWorkspaceID,'.azuredatabricks.net/api/2.1/jobs/runs/get?run_id=',activity('Run Now Api').output.run_id)",
+									"value": "@concat('https://adb-1558361433928880.0.azuredatabricks.net/api/2.1/jobs/runs/get?run_id=',activity('Run Now Api').output.run_id)",
 									"type": "Expression"
 								},
 								"method": "GET",

@@ -9,7 +9,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "Testing_2",
+						"referenceName": "Sharepoint_ingestion",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true,
