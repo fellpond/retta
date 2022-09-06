@@ -52,30 +52,6 @@
 				]
 			},
 			{
-				"name": "Execute Pipeline1",
-				"type": "ExecutePipeline",
-				"dependsOn": [],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "Email_Notifier",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"EmailTo": {
-							"value": "@pipeline().parameters.email",
-							"type": "Expression"
-						},
-						"Activity": {
-							"value": "@concat(pipeline()?.TriggeredByPipelineName, ' : Metri API Rest Call')",
-							"type": "Expression"
-						},
-						"ErrorMessage": "Metri API failed"
-					}
-				}
-			},
-			{
 				"name": "parse and transform",
 				"type": "WebActivity",
 				"dependsOn": [
