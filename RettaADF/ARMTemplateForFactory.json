@@ -81,7 +81,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
-								"referenceName": "Testing_2",
+								"referenceName": "Sharepoint_ingestion",
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
@@ -187,7 +187,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/Testing_2')]",
+				"[concat(variables('factoryId'), '/pipelines/Sharepoint_ingestion')]",
 				"[concat(variables('factoryId'), '/pipelines/get_current_weather')]",
 				"[concat(variables('factoryId'), '/pipelines/Weather_parser')]",
 				"[concat(variables('factoryId'), '/pipelines/energy_hrly_ld')]",
@@ -247,7 +247,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Testing_2')]",
+			"name": "[concat(parameters('factoryName'), '/Sharepoint_ingestion')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -307,7 +307,7 @@
 									"userProperties": [],
 									"typeProperties": {
 										"url": {
-											"value": "@concat('https://',pipeline().parameters.DatabricksWorkspaceID,'.azuredatabricks.net/api/2.1/jobs/runs/get?run_id=',activity('Run Now Api').output.run_id)",
+											"value": "@concat('https://adb-1558361433928880.0.azuredatabricks.net/api/2.1/jobs/runs/get?run_id=',activity('Run Now Api').output.run_id)",
 											"type": "Expression"
 										},
 										"method": "GET",
