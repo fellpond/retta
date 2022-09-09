@@ -12,10 +12,7 @@
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
-				"type": "AzureBlobFSLocation",
-				"fileName": "site_loc.csv",
-				"folderPath": "sharepoint/config",
-				"fileSystem": "bronze"
+				"type": "AzureBlobFSLocation"
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
