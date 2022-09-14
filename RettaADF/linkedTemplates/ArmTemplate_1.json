@@ -653,32 +653,11 @@
 						}
 					},
 					{
-						"name": "Weather_api",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Sharepoint",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "get_current_weather",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
 						"name": "Weather_parser",
 						"type": "ExecutePipeline",
 						"dependsOn": [
 							{
-								"activity": "Weather_api",
+								"activity": "Sharepoint",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -747,7 +726,6 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/get_current_weather')]",
 				"[concat(variables('factoryId'), '/pipelines/energy_hrly_ld')]",
 				"[concat(variables('factoryId'), '/pipelines/energy_dly_mnthly_ld')]"
 			]
