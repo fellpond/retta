@@ -1,6 +1,31 @@
 {
 	"name": "Loading_datawarehouse",
 	"properties": {
+		"activities": [
+			{
+				"name": "Run Now Api",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
+					"method": "POST",
+					"headers": {
+						"Authorization": "Bearer dapiadd302a095a7c76e4f264fb81cc37060-2"
+					},
+					"body": {
+						"job_id": 726405559678070
+					}
+				}
+			}
+		],
 		"folder": {
 			"name": "Datawarehouse"
 		},
