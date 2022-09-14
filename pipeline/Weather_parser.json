@@ -24,8 +24,135 @@
 						"job_id": 962589072713801
 					}
 				}
+			},
+			{
+				"name": "Until1",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "weather_parse",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@not(equals(variables('JobStatus'),'Running'))",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Check API",
+							"type": "WebActivity",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"url": {
+									"value": "@concat('https://adb-1558361433928880.0.azuredatabricks.net/api/2.1/jobs/runs/get?run_id=',activity('weather_parse').output.run_id)",
+									"type": "Expression"
+								},
+								"method": "GET",
+								"headers": {
+									"Authorization": "Bearer dapiadd302a095a7c76e4f264fb81cc37060-2"
+								}
+							}
+						},
+						{
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Check API",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "JobStatus",
+								"value": {
+									"value": "@if(\nor(\nequals(activity('Check API').output.state.life_cycle_state, 'PENDING'), equals(activity('Check API').output.state.life_cycle_state, 'RUNNING')\n),\n'Running',\nif(equals(activity('Check API').output.state.life_cycle_state,'FAILED'),'Failed',activity('Check API').output.state.result_state)\n)\n",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Wait to recheck API",
+							"type": "Wait",
+							"dependsOn": [
+								{
+									"activity": "Set variable1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": {
+									"value": "@pipeline().parameters.Waitsec",
+									"type": "Expression"
+								}
+							}
+						}
+					],
+					"timeout": "7.00:00:00"
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Until1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@not(equals(activity('Check API').output.state.result_state,'SUCCESS'))",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Fail1",
+							"type": "Fail",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"message": "{ Databricks Sharepoint ingestion Workflow failed }",
+								"errorCode": "Failed"
+							}
+						}
+					]
+				}
 			}
 		],
+		"parameters": {
+			"Waitsec": {
+				"type": "int",
+				"defaultValue": 30
+			}
+		},
+		"variables": {
+			"JobStatus": {
+				"type": "String",
+				"defaultValue": "Running"
+			}
+		},
 		"folder": {
 			"name": "accuweather"
 		},
