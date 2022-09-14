@@ -1,0 +1,9 @@
+{
+	"name": "Loading_datawarehouse",
+	"properties": {
+		"folder": {
+			"name": "Datawarehouse"
+		},
+		"annotations": []
+	}
+}
