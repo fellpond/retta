@@ -1,0 +1,24 @@
+{
+	"name": "Get_weather",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "get_current_weather",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Hour",
+				"interval": 1,
+				"startTime": "2022-09-14T16:00:00Z",
+				"timeZone": "UTC"
+			}
+		}
+	}
+}
