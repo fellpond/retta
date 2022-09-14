@@ -1,0 +1,29 @@
+{
+	"name": "Master_pipeline",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "All_data_ingestion",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2022-09-14T15:00:00Z",
+				"timeZone": "UTC",
+				"schedule": {
+					"hours": [
+						12
+					]
+				}
+			}
+		}
+	}
+}
