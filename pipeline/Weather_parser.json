@@ -133,7 +133,7 @@
 							"dependsOn": [],
 							"userProperties": [],
 							"typeProperties": {
-								"message": "{ Databricks Sharepoint ingestion Workflow failed }",
+								"message": "{ Weather parsing failed }",
 								"errorCode": "Failed"
 							}
 						}
