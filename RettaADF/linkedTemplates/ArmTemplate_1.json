@@ -21,6 +21,98 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/WeatherSinkJson')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"file_name": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "weather_datasets"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().file_name",
+							"type": "Expression"
+						},
+						"folderPath": "weather/input",
+						"fileSystem": "bronze"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/energy_dly_mnthly')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "energy_datasets/storage_ds"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@concat('energy_dly_mnthly', utcnow('yyyyMMdd'))",
+							"type": "Expression"
+						},
+						"folderPath": "energy_dly_mnthly/input",
+						"fileSystem": "bronze"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/energy_hrly_stg')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "energy_datasets/storage_ds"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@concat('energy_hrly_', utcnow('yyyyMMdd'))",
+							"type": "Expression"
+						},
+						"folderPath": "energy_hrly/input",
+						"fileSystem": "bronze"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/hourlyOffset')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -337,7 +429,8 @@
 				"lastPublishTime": "2022-08-08T01:57:13Z"
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/site_loc_key')]"
+				"[concat(variables('factoryId'), '/datasets/site_loc_key')]",
+				"[concat(variables('factoryId'), '/datasets/WeatherSinkJson')]"
 			]
 		},
 		{
@@ -456,6 +549,121 @@
 								"job_id": 953228974256009
 							}
 						}
+					},
+					{
+						"name": "If Condition1",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Until1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@not(equals(activity('Check API').output.state.result_state,'SUCCESS'))",
+								"type": "Expression"
+							},
+							"ifTrueActivities": [
+								{
+									"name": "Fail1",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "{ Energy Daily and hourly Workflow failed }",
+										"errorCode": "Failed"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Until1",
+						"type": "Until",
+						"dependsOn": [
+							{
+								"activity": "parse and transform",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@not(equals(variables('JobStatus'),'Running'))",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Check API",
+									"type": "WebActivity",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"url": {
+											"value": "@concat('https://adb-1558361433928880.0.azuredatabricks.net/api/2.1/jobs/runs/get?run_id=',activity('parse and transform').output.run_id)",
+											"type": "Expression"
+										},
+										"method": "GET",
+										"headers": {
+											"Authorization": "Bearer dapiadd302a095a7c76e4f264fb81cc37060-2"
+										}
+									}
+								},
+								{
+									"name": "Set variable1",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Check API",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "JobStatus",
+										"value": {
+											"value": "@if(\nor(\nequals(activity('Check API').output.state.life_cycle_state, 'PENDING'), equals(activity('Check API').output.state.life_cycle_state, 'RUNNING')\n),\n'Running',\nif(equals(activity('Check API').output.state.life_cycle_state,'FAILED'),'Failed',activity('Check API').output.state.result_state)\n)\n",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Wait to recheck API",
+									"type": "Wait",
+									"dependsOn": [
+										{
+											"activity": "Set variable1",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": {
+											"value": "@pipeline().parameters.Waitsec",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"timeout": "7.00:00:00"
+						}
 					}
 				],
 				"policy": {
@@ -466,12 +674,20 @@
 					"email": {
 						"type": "string",
 						"defaultValue": "prayank.sharma@routadigital.com"
+					},
+					"Waitsec": {
+						"type": "int",
+						"defaultValue": 30
 					}
 				},
 				"variables": {
 					"test": {
 						"type": "String",
 						"defaultValue": "1"
+					},
+					"JobStatus": {
+						"type": "String",
+						"defaultValue": "Running"
 					}
 				},
 				"folder": {
@@ -481,7 +697,8 @@
 				"lastPublishTime": "2022-08-08T01:57:13Z"
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/metryDS')]"
+				"[concat(variables('factoryId'), '/datasets/metryDS')]",
+				"[concat(variables('factoryId'), '/datasets/energy_dly_mnthly')]"
 			]
 		},
 		{
@@ -611,11 +828,138 @@
 								"job_id": 733327385784331
 							}
 						}
+					},
+					{
+						"name": "If Condition1",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Until1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@not(equals(activity('Check API').output.state.result_state,'SUCCESS'))",
+								"type": "Expression"
+							},
+							"ifTrueActivities": [
+								{
+									"name": "Fail1",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "{ Energy Hourly Workflow failed }",
+										"errorCode": "Failed"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Until1",
+						"type": "Until",
+						"dependsOn": [
+							{
+								"activity": "Energy_hourly_parser",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@not(equals(variables('JobStatus'),'Running'))",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Check API",
+									"type": "WebActivity",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"url": {
+											"value": "@concat('https://adb-1558361433928880.0.azuredatabricks.net/api/2.1/jobs/runs/get?run_id=',activity('Energy_hourly_parser').output.run_id)",
+											"type": "Expression"
+										},
+										"method": "GET",
+										"headers": {
+											"Authorization": "Bearer dapiadd302a095a7c76e4f264fb81cc37060-2"
+										}
+									}
+								},
+								{
+									"name": "Set variable1",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Check API",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "JobStatus",
+										"value": {
+											"value": "@if(\nor(\nequals(activity('Check API').output.state.life_cycle_state, 'PENDING'), equals(activity('Check API').output.state.life_cycle_state, 'RUNNING')\n),\n'Running',\nif(equals(activity('Check API').output.state.life_cycle_state,'FAILED'),'Failed',activity('Check API').output.state.result_state)\n)\n",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Wait to recheck API",
+									"type": "Wait",
+									"dependsOn": [
+										{
+											"activity": "Set variable1",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": {
+											"value": "@pipeline().parameters.Waitsec",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"timeout": "7.00:00:00"
+						}
 					}
 				],
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
+				},
+				"parameters": {
+					"Waitsec": {
+						"type": "int",
+						"defaultValue": 30
+					}
+				},
+				"variables": {
+					"JobStatus": {
+						"type": "String",
+						"defaultValue": "Running"
+					}
 				},
 				"folder": {
 					"name": "energy_pipelines"
@@ -625,7 +969,38 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/metryDS')]",
+				"[concat(variables('factoryId'), '/datasets/energy_hrly_stg')]",
 				"[concat(variables('factoryId'), '/datasets/hourlyOffset')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Get_weather')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "get_current_weather",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Hour",
+						"interval": 1,
+						"startTime": "2022-09-14T16:00:00Z",
+						"timeZone": "UTC"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/get_current_weather')]"
 			]
 		},
 		{
@@ -714,6 +1089,39 @@
 							"waitOnCompletion": true,
 							"parameters": {}
 						}
+					},
+					{
+						"name": "Datawarehouse Loading",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Weather_parser",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "Energy hourly",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "Energy_daily",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Loading_datawarehouse",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"policy": {
@@ -731,7 +1139,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/energy_hourly_trigger')]",
+			"name": "[concat(parameters('factoryName'), '/Master_pipeline')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -740,7 +1148,7 @@
 				"pipelines": [
 					{
 						"pipelineReference": {
-							"referenceName": "energy_hrly_ld",
+							"referenceName": "All_data_ingestion",
 							"type": "PipelineReference"
 						},
 						"parameters": {}
@@ -751,47 +1159,9 @@
 					"recurrence": {
 						"frequency": "Day",
 						"interval": 1,
-						"startTime": "2022-07-28T04:09:00",
-						"timeZone": "Eastern Standard Time",
-						"schedule": {
-							"hours": [
-								12
-							]
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/energy_hrly_ld')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/load_enrgy_data')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "energy_dly_mnthly_ld",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2022-07-03T18:57:00Z",
+						"startTime": "2022-09-14T15:00:00Z",
 						"timeZone": "UTC",
 						"schedule": {
-							"minutes": [
-								0
-							],
 							"hours": [
 								12
 							]
@@ -800,7 +1170,7 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/energy_dly_mnthly_ld')]"
+				"[concat(variables('factoryId'), '/pipelines/All_data_ingestion')]"
 			]
 		}
 	]
