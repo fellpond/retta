@@ -21,31 +21,11 @@
 				}
 			},
 			{
-				"name": "Weather_api",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Sharepoint",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "get_current_weather",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true
-				}
-			},
-			{
 				"name": "Weather_parser",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
-						"activity": "Weather_api",
+						"activity": "Sharepoint",
 						"dependencyConditions": [
 							"Succeeded"
 						]
