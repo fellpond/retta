@@ -166,6 +166,27 @@
 								]
 							},
 							{
+								"activity": "CO2_pipeline",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Loading_datawarehouse",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "CO2_pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
 								"activity": "Energy hourly",
 								"dependencyConditions": [
 									"Succeeded"
@@ -181,11 +202,13 @@
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
-								"referenceName": "Loading_datawarehouse",
+								"referenceName": "CO2_fetch_parse",
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
-							"parameters": {}
+							"parameters": {
+								"Waitsec": 30
+							}
 						}
 					}
 				],
@@ -203,7 +226,8 @@
 				"[concat(variables('factoryId'), '/pipelines/Weather_parser')]",
 				"[concat(variables('factoryId'), '/pipelines/energy_hrly_ld')]",
 				"[concat(variables('factoryId'), '/pipelines/energy_dly_mnthly_ld')]",
-				"[concat(variables('factoryId'), '/pipelines/Loading_datawarehouse')]"
+				"[concat(variables('factoryId'), '/pipelines/Loading_datawarehouse')]",
+				"[concat(variables('factoryId'), '/pipelines/CO2_fetch_parse')]"
 			]
 		},
 		{

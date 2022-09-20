@@ -1131,6 +1131,27 @@
 								]
 							},
 							{
+								"activity": "CO2_pipeline",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Loading_datawarehouse",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "CO2_pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
 								"activity": "Energy hourly",
 								"dependencyConditions": [
 									"Succeeded"
@@ -1146,11 +1167,13 @@
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
-								"referenceName": "Loading_datawarehouse",
+								"referenceName": "CO2_fetch_parse",
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
-							"parameters": {}
+							"parameters": {
+								"Waitsec": 30
+							}
 						}
 					}
 				],
