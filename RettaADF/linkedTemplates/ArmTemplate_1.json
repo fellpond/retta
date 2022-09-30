@@ -538,7 +538,10 @@
 								"referenceName": "metryDS",
 								"type": "DatasetReference",
 								"parameters": {
-									"endpoint": "meters"
+									"endpoint": {
+										"value": "@concat('meters?','box=',pipeline().parameters.box,'&','limit=',pipeline().parameters.limit)",
+										"type": "Expression"
+									}
 								}
 							}
 						],
@@ -708,6 +711,14 @@
 					"Waitsec": {
 						"type": "int",
 						"defaultValue": 30
+					},
+					"box": {
+						"type": "string",
+						"defaultValue": "active"
+					},
+					"limit": {
+						"type": "string",
+						"defaultValue": "10000"
 					}
 				},
 				"variables": {
