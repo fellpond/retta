@@ -2250,8 +2250,16 @@
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
-				"runtimeState": "Stopped",
-				"pipelines": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Sharepoint_data_ingestion",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
 				"type": "ScheduleTrigger",
 				"typeProperties": {
 					"recurrence": {
@@ -2264,14 +2272,17 @@
 								0
 							],
 							"hours": [
-								10,
-								20
+								5,
+								9,
+								16
 							]
 						}
 					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Sharepoint_data_ingestion')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/energy_hourly_trigger')]",
