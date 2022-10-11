@@ -31,6 +31,10 @@
 							"value": "@concat('{\"offset:\"','\"',activity('fetch last offset').output.firstRow.offset,'\"}')",
 							"type": "Expression"
 						},
+						"additionalHeaders": {
+							"Content-Type": "application/json",
+							"Cookie": "energimolnet=tchvk95ik75e5mbnp1k088c0nv1b25c1"
+						},
 						"paginationRules": {
 							"supportRFC5988": "true"
 						}
