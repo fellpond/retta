@@ -21,6 +21,36 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/WeatherLocationDS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "blob_Weather_Location_Config",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "weather_datasets"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "location_key_config.csv",
+						"folderPath": "config",
+						"container": "weather-raw"
+					},
+					"columnDelimiter": "\t",
+					"escapeChar": "\\",
+					"firstRowAsHeader": false,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/WeatherSinkJson')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -258,63 +288,6 @@
 						}
 					}
 				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Sharepoint_data_ingestion')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Sharepoint",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "Sharepoint_ingestion",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"JobID": "350589294007009",
-								"DatabricksWorkspaceID": "adb-1558361433928880",
-								"Waitsec": 30
-							}
-						}
-					},
-					{
-						"name": "Datawarehouse Loading",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Sharepoint",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "Loading_datawarehouse",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"folder": {
-					"name": "Ingestion_pipeline"
-				},
-				"annotations": []
 			},
 			"dependsOn": []
 		},
@@ -557,9 +530,7 @@
 					}
 				}
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/Sharepoint_data_ingestion')]"
-			]
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/energy_dly_mnthly_ld')]",
@@ -843,6 +814,10 @@
 								"requestBody": {
 									"value": "@concat('{\"offset:\"','\"',activity('fetch last offset').output.firstRow.offset,'\"}')",
 									"type": "Expression"
+								},
+								"additionalHeaders": {
+									"Content-Type": "application/json",
+									"Cookie": "energimolnet=tchvk95ik75e5mbnp1k088c0nv1b25c1"
 								},
 								"paginationRules": {
 									"supportRFC5988": "true"
