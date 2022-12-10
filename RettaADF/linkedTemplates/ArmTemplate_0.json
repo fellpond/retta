@@ -997,6 +997,33 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/monthly_history')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "energy_pipelines"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Sharepoint_data_ingestion')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -1085,38 +1112,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/WeatherAPI')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/WeatherDSParam')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "WeatherAPIParam",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"location_key_param": {
-							"value": "@dataset().location_keyds_param",
-							"type": "Expression"
-						}
-					}
-				},
-				"parameters": {
-					"location_keyds_param": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "weather_datasets"
-				},
-				"annotations": [],
-				"type": "RestResource",
-				"typeProperties": {},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/WeatherAPIParam')]"
 			]
 		}
 	]

@@ -21,6 +21,36 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/WeatherDSParam')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WeatherAPIParam",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"location_key_param": {
+							"value": "@dataset().location_keyds_param",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"location_keyds_param": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "weather_datasets"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/WeatherLocationDS')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
