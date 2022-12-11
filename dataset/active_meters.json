@@ -1,0 +1,26 @@
+{
+	"name": "active_meters",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "energy_datasets/storage_ds"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@concat('active_meters', utcnow('yyyyMMdd'))",
+					"type": "Expression"
+				},
+				"folderPath": "energy_history/input",
+				"fileSystem": "bronze"
+			}
+		},
+		"schema": {}
+	}
+}
