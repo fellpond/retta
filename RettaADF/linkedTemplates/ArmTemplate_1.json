@@ -1403,7 +1403,7 @@
 											"type": "DatasetReference",
 											"parameters": {
 												"endpoint": {
-													"value": "@concat('consumptions/multi/month/',item(),'/?meters=',activity('Lookup1').output.firstRow)",
+													"value": "@concat('consumptions/multi/month/',item(),'/?meters=',activity('Lookup1').output.firstRow._1)",
 													"type": "Expression"
 												}
 											}
