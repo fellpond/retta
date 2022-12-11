@@ -1,9 +1,15 @@
 {
-	"name": "active_meters_stg",
+	"name": "history_monthly",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureDataLakeStorage1",
 			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"year": {
+				"type": "string",
+				"defaultValue": "2022"
+			}
 		},
 		"folder": {
 			"name": "energy_datasets/storage_ds"
@@ -14,10 +20,10 @@
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"fileName": {
-					"value": "@concat('active_meters', utcnow('yyyyMMdd'))",
+					"value": "@concat('history_monthly',dataset().year,'_',utcnow('yyyyMMdd'))",
 					"type": "Expression"
 				},
-				"folderPath": "energy_history/input",
+				"folderPath": "energy_month_history/input",
 				"fileSystem": "bronze"
 			}
 		},

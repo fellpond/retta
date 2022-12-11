@@ -1,5 +1,5 @@
 {
-	"name": "active_meters_stg",
+	"name": "activemeter_list",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureDataLakeStorage1",
@@ -9,18 +9,19 @@
 			"name": "energy_datasets/storage_ds"
 		},
 		"annotations": [],
-		"type": "Json",
+		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": {
-					"value": "@concat('active_meters', utcnow('yyyyMMdd'))",
-					"type": "Expression"
-				},
-				"folderPath": "energy_history/input",
+				"fileName": "meters.csv",
+				"folderPath": "energy_history/config",
 				"fileSystem": "bronze"
-			}
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
 		},
-		"schema": {}
+		"schema": []
 	}
 }

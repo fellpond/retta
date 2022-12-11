@@ -1,5 +1,5 @@
 {
-	"name": "monthly_history",
+	"name": "active_meters",
 	"properties": {
 		"activities": [
 			{
@@ -50,7 +50,7 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "active_meters",
+						"referenceName": "active_meters_stg",
 						"type": "DatasetReference"
 					}
 				]
