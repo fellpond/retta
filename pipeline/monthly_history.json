@@ -4,6 +4,7 @@
 		"activities": [
 			{
 				"name": "Copy data1",
+				"description": "Save active meters in datalake.",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
