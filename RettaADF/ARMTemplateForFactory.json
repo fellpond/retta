@@ -2471,6 +2471,36 @@
 								"parameters": {}
 							}
 						]
+					},
+					{
+						"name": "save active_meters",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Copy data1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
+							"method": "POST",
+							"headers": {
+								"Authorization": "Bearer dapi2d8572a0b4a2fd102620ae255d5ed98c-2"
+							},
+							"body": {
+								"job_id": 470567759038934
+							}
+						}
 					}
 				],
 				"policy": {
@@ -2685,6 +2715,36 @@
 									]
 								}
 							]
+						}
+					},
+					{
+						"name": "monthly_history code",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "metry_call",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
+							"method": "POST",
+							"headers": {
+								"Authorization": "Bearer dapi2d8572a0b4a2fd102620ae255d5ed98c-2"
+							},
+							"body": {
+								"job_id": 461208205112966
+							}
 						}
 					}
 				],
