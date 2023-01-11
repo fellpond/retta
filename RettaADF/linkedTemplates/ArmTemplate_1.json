@@ -202,6 +202,41 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/history_daily')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"year": {
+						"type": "string",
+						"defaultValue": "2022"
+					}
+				},
+				"folder": {
+					"name": "energy_datasets/storage_ds"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@concat('history_daily',dataset().year,'_',utcnow('yyyyMMdd'))",
+							"type": "Expression"
+						},
+						"folderPath": "energy_daily_history/input",
+						"fileSystem": "bronze"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/history_monthly')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -382,41 +417,6 @@
 						}
 					}
 				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/history_daily')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"year": {
-						"type": "string",
-						"defaultValue": "2022"
-					}
-				},
-				"folder": {
-					"name": "energy_datasets/storage_ds"
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@concat('history_daily',dataset().year,'_',utcnow('yyyyMMdd'))",
-							"type": "Expression"
-						},
-						"folderPath": "energy_daily_history/input",
-						"fileSystem": "bronze"
-					}
-				},
-				"schema": {}
 			},
 			"dependsOn": []
 		},
@@ -778,6 +778,222 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/metryDS')]",
 				"[concat(variables('factoryId'), '/datasets/active_meters_stg')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/daily_history')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "adding years",
+						"type": "ForEach",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@range(pipeline().parameters.startyear,pipeline().parameters.noofyears)",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Append variable1",
+									"type": "AppendVariable",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "year",
+										"value": {
+											"value": "@add(item(),1)",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "metry_call",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "adding years",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "Lookup1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@variables('year')",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Copy data1",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:01:40",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET",
+											"additionalHeaders": {
+												"Authorization": "Bearer 722090723400a9181120f957636348769bae76b0cef705721e3884217ec8"
+											},
+											"paginationRules": {
+												"supportRFC5988": "true"
+											}
+										},
+										"sink": {
+											"type": "JsonSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "JsonWriteSettings"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "metryDS",
+											"type": "DatasetReference",
+											"parameters": {
+												"endpoint": {
+													"value": "@concat('consumptions/multi/day/',item(),'/?meters=',activity('Lookup1').output.firstRow._1)",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "history_daily",
+											"type": "DatasetReference",
+											"parameters": {
+												"year": {
+													"value": "@item()",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "daily_history code",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "metry_call",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
+							"method": "POST",
+							"headers": {
+								"Authorization": "Bearer dapi2d8572a0b4a2fd102620ae255d5ed98c-2"
+							},
+							"body": {
+								"job_id": 281403025512507
+							}
+						}
+					},
+					{
+						"name": "Lookup1",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "activemeter_list",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"startyear": {
+						"type": "int",
+						"defaultValue": 2017
+					},
+					"noofyears": {
+						"type": "int",
+						"defaultValue": 5
+					}
+				},
+				"variables": {
+					"year": {
+						"type": "Array",
+						"defaultValue": []
+					}
+				},
+				"folder": {
+					"name": "energy_pipelines"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/activemeter_list')]",
+				"[concat(variables('factoryId'), '/datasets/metryDS')]",
+				"[concat(variables('factoryId'), '/datasets/history_daily')]"
 			]
 		},
 		{
@@ -1303,222 +1519,6 @@
 				"[concat(variables('factoryId'), '/datasets/metryDS')]",
 				"[concat(variables('factoryId'), '/datasets/energy_hrly_stg')]",
 				"[concat(variables('factoryId'), '/datasets/hourlyOffset')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/monthly_history')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "adding years",
-						"type": "ForEach",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@range(pipeline().parameters.startyear,pipeline().parameters.noofyears)",
-								"type": "Expression"
-							},
-							"isSequential": true,
-							"activities": [
-								{
-									"name": "Append variable1",
-									"type": "AppendVariable",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"variableName": "year",
-										"value": {
-											"value": "@add(item(),1)",
-											"type": "Expression"
-										}
-									}
-								}
-							]
-						}
-					},
-					{
-						"name": "metry_call",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "adding years",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
-							{
-								"activity": "Lookup1",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@variables('year')",
-								"type": "Expression"
-							},
-							"isSequential": true,
-							"activities": [
-								{
-									"name": "Copy data1",
-									"type": "Copy",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "RestSource",
-											"httpRequestTimeout": "00:01:40",
-											"requestInterval": "00.00:00:00.010",
-											"requestMethod": "GET",
-											"additionalHeaders": {
-												"Authorization": "Bearer 722090723400a9181120f957636348769bae76b0cef705721e3884217ec8"
-											},
-											"paginationRules": {
-												"supportRFC5988": "true"
-											}
-										},
-										"sink": {
-											"type": "JsonSink",
-											"storeSettings": {
-												"type": "AzureBlobFSWriteSettings"
-											},
-											"formatSettings": {
-												"type": "JsonWriteSettings"
-											}
-										},
-										"enableStaging": false
-									},
-									"inputs": [
-										{
-											"referenceName": "metryDS",
-											"type": "DatasetReference",
-											"parameters": {
-												"endpoint": {
-													"value": "@concat('consumptions/multi/month/',item(),'/?meters=',activity('Lookup1').output.firstRow._1)",
-													"type": "Expression"
-												}
-											}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "history_monthly",
-											"type": "DatasetReference",
-											"parameters": {
-												"year": {
-													"value": "@item()",
-													"type": "Expression"
-												}
-											}
-										}
-									]
-								}
-							]
-						}
-					},
-					{
-						"name": "monthly_history code",
-						"type": "WebActivity",
-						"dependsOn": [
-							{
-								"activity": "metry_call",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
-							"method": "POST",
-							"headers": {
-								"Authorization": "Bearer dapi2d8572a0b4a2fd102620ae255d5ed98c-2"
-							},
-							"body": {
-								"job_id": 461208205112966
-							}
-						}
-					},
-					{
-						"name": "Lookup1",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobFSReadSettings",
-									"recursive": true,
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"dataset": {
-								"referenceName": "activemeter_list",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"parameters": {
-					"startyear": {
-						"type": "int",
-						"defaultValue": 2017
-					},
-					"noofyears": {
-						"type": "int",
-						"defaultValue": 5
-					}
-				},
-				"variables": {
-					"year": {
-						"type": "Array",
-						"defaultValue": []
-					}
-				},
-				"folder": {
-					"name": "energy_pipelines"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/activemeter_list')]",
-				"[concat(variables('factoryId'), '/datasets/metryDS')]",
-				"[concat(variables('factoryId'), '/datasets/history_monthly')]"
 			]
 		}
 	]

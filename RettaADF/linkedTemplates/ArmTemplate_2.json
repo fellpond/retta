@@ -13,35 +13,7 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/Get_weather')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "get_current_weather",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Hour",
-						"interval": 1,
-						"startTime": "2022-09-14T16:00:00Z",
-						"timeZone": "UTC"
-					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/daily_history')]",
+			"name": "[concat(parameters('factoryName'), '/monthly_history')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -141,7 +113,7 @@
 											"type": "DatasetReference",
 											"parameters": {
 												"endpoint": {
-													"value": "@concat('consumptions/multi/day/',item(),'/?meters=',activity('Lookup1').output.firstRow._1)",
+													"value": "@concat('consumptions/multi/month/',item(),'/?meters=',activity('Lookup1').output.firstRow._1)",
 													"type": "Expression"
 												}
 											}
@@ -149,7 +121,7 @@
 									],
 									"outputs": [
 										{
-											"referenceName": "history_daily",
+											"referenceName": "history_monthly",
 											"type": "DatasetReference",
 											"parameters": {
 												"year": {
@@ -164,7 +136,7 @@
 						}
 					},
 					{
-						"name": "daily_history code",
+						"name": "monthly_history code",
 						"type": "WebActivity",
 						"dependsOn": [
 							{
@@ -189,7 +161,7 @@
 								"Authorization": "Bearer dapi2d8572a0b4a2fd102620ae255d5ed98c-2"
 							},
 							"body": {
-								"job_id": 281403025512507
+								"job_id": 461208205112966
 							}
 						}
 					},
@@ -253,6 +225,34 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Get_weather')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "get_current_weather",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Hour",
+						"interval": 1,
+						"startTime": "2022-09-14T16:00:00Z",
+						"timeZone": "UTC"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/All_data_ingestion')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -279,14 +279,7 @@
 					{
 						"name": "Weather_parser",
 						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Sharepoint",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
+						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -300,14 +293,7 @@
 					{
 						"name": "Energy hourly",
 						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Sharepoint",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
+						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -321,14 +307,7 @@
 					{
 						"name": "Energy_daily",
 						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Sharepoint",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
+						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -351,6 +330,12 @@
 							},
 							{
 								"activity": "CO2_pipeline",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "Sharepoint",
 								"dependencyConditions": [
 									"Succeeded"
 								]
