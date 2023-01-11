@@ -23,14 +23,7 @@
 			{
 				"name": "Weather_parser",
 				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Sharepoint",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
@@ -43,14 +36,7 @@
 			{
 				"name": "Energy hourly",
 				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Sharepoint",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
@@ -63,14 +49,7 @@
 			{
 				"name": "Energy_daily",
 				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Sharepoint",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
@@ -92,6 +71,12 @@
 					},
 					{
 						"activity": "CO2_pipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Sharepoint",
 						"dependencyConditions": [
 							"Succeeded"
 						]
