@@ -78,7 +78,7 @@
 					"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
 					"method": "POST",
 					"headers": {
-						"Authorization": "Bearer dapi2d8572a0b4a2fd102620ae255d5ed98c-2"
+						"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
 					},
 					"body": {
 						"job_id": 470567759038934
