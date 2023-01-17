@@ -281,7 +281,7 @@
 										},
 										"method": "GET",
 										"headers": {
-											"Authorization": "Bearer dapi2d8572a0b4a2fd102620ae255d5ed98c-2"
+											"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
 										}
 									}
 								},
@@ -501,7 +501,7 @@
 										},
 										"method": "GET",
 										"headers": {
-											"Authorization": "Bearer dapi2d8572a0b4a2fd102620ae255d5ed98c-2"
+											"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
 										}
 									}
 								},
@@ -729,7 +729,7 @@
 										},
 										"method": "GET",
 										"headers": {
-											"Authorization": "Bearer dapi2d8572a0b4a2fd102620ae255d5ed98c-2"
+											"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
 										}
 									}
 								},
@@ -905,7 +905,7 @@
 										},
 										"method": "GET",
 										"headers": {
-											"Authorization": "Bearer dapi2d8572a0b4a2fd102620ae255d5ed98c-2"
+											"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
 										}
 									}
 								},
@@ -1499,7 +1499,7 @@
 										},
 										"method": "GET",
 										"headers": {
-											"Authorization": "Bearer dapi2d8572a0b4a2fd102620ae255d5ed98c-2"
+											"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
 										}
 									}
 								},
@@ -1791,7 +1791,7 @@
 										},
 										"method": "GET",
 										"headers": {
-											"Authorization": "Bearer dapi2d8572a0b4a2fd102620ae255d5ed98c-2"
+											"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
 										}
 									}
 								},
