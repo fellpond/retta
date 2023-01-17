@@ -109,7 +109,14 @@
 					{
 						"name": "Energy hourly",
 						"type": "ExecutePipeline",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Sharepoint",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -123,7 +130,14 @@
 					{
 						"name": "Energy_daily",
 						"type": "ExecutePipeline",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Sharepoint",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -146,12 +160,6 @@
 							},
 							{
 								"activity": "CO2_pipeline",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
-							{
-								"activity": "Sharepoint",
 								"dependencyConditions": [
 									"Succeeded"
 								]
