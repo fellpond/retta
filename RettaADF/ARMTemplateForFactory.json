@@ -75,24 +75,6 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Sharepoint",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "Sharepoint_ingestion",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"JobID": "350589294007009",
-								"DatabricksWorkspaceID": "adb-1558361433928880",
-								"Waitsec": 30
-							}
-						}
-					},
-					{
 						"name": "Weather_parser",
 						"type": "ExecutePipeline",
 						"dependsOn": [],
@@ -109,14 +91,7 @@
 					{
 						"name": "Energy hourly",
 						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Sharepoint",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
+						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -130,14 +105,7 @@
 					{
 						"name": "Energy_daily",
 						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Sharepoint",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
+						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -215,7 +183,6 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/Sharepoint_ingestion')]",
 				"[concat(variables('factoryId'), '/pipelines/Weather_parser')]",
 				"[concat(variables('factoryId'), '/pipelines/energy_hrly_ld')]",
 				"[concat(variables('factoryId'), '/pipelines/energy_dly_mnthly_ld')]",
