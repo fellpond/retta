@@ -52,7 +52,12 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": [],
+				"userProperties": [
+					{
+						"name": "Destination",
+						"value": "dbo.TempEnergy_Coeff_Monthly"
+					}
+				],
 				"typeProperties": {
 					"source": {
 						"type": "RestSource",
@@ -261,10 +266,12 @@
 		],
 		"variables": {
 			"StartDate": {
-				"type": "String"
+				"type": "String",
+				"defaultValue": "2023-01-10T00:00:00Z"
 			},
 			"EndDate": {
-				"type": "String"
+				"type": "String",
+				"defaultValue": "2023-01-10T00:00:00Z"
 			}
 		},
 		"folder": {
