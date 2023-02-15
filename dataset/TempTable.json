@@ -1,0 +1,16 @@
+{
+	"name": "TempTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "RettaDW",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "TempEnergy_Coeff_Monthly"
+		}
+	}
+}
