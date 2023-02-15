@@ -47,6 +47,10 @@
 			"type": "string",
 			"defaultValue": "https://rettakvault.vault.azure.net/"
 		},
+		"FinGridAPI_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://api.fingrid.fi/v1/variable/265/events/json"
+		},
 		"WeatherAPI_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "http://dataservice.accuweather.com/currentconditions/v1/"
@@ -287,18 +291,66 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Wait1",
-						"type": "Wait",
+						"name": "FirstDayOfPreviousMonth",
+						"type": "SetVariable",
 						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
-							"waitTimeInSeconds": 1
+							"variableName": "StartDate",
+							"value": {
+								"value": "@startOfMonth(adddays(startOfMonth(utcnow()),-1))\n",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "LastDayOfPreviousMonth",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "EndDate",
+							"value": {
+								"value": "@concat(formatDateTime(adddays(startOfMonth(utcnow()),-1),'yyyy-MM-dd'),'T23:59:00Z')\n",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "FirstDayOfPreviousMonth",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"enableStaging": false
 						}
 					}
 				],
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
+				},
+				"variables": {
+					"StartDate": {
+						"type": "String"
+					},
+					"EndDate": {
+						"type": "String"
+					}
 				},
 				"folder": {
 					"name": "finGrid"
@@ -900,6 +952,22 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/FinGridAPI')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "this is a open API and will return value based on DateRange",
+				"annotations": [],
+				"type": "HttpServer",
+				"typeProperties": {
+					"url": "[parameters('FinGridAPI_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/WeatherAPI')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -1081,37 +1149,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/Sharepoint_ingestion')]",
 				"[concat(variables('factoryId'), '/pipelines/Loading_datawarehouse')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/WeatherDS')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "WeatherAPI",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"loc_key": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "weather_datasets"
-				},
-				"annotations": [],
-				"type": "RestResource",
-				"typeProperties": {
-					"relativeUrl": {
-						"value": "@dataset().loc_key",
-						"type": "Expression"
-					}
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/WeatherAPI')]"
 			]
 		}
 	]

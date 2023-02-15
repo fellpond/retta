@@ -35,6 +35,9 @@
 		"AzureKeyVaultRetta_properties_typeProperties_baseUrl": {
 			"value": "https://rettakvault.vault.azure.net/"
 		},
+		"FinGridAPI_properties_typeProperties_url": {
+			"value": "https://api.fingrid.fi/v1/variable/265/events/json"
+		},
 		"WeatherAPI_properties_typeProperties_url": {
 			"value": "http://dataservice.accuweather.com/currentconditions/v1/"
 		},
