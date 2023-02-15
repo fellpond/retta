@@ -3,15 +3,34 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Wait1",
-				"type": "Wait",
+				"name": "FirstDayOfPreviousMonth",
+				"type": "SetVariable",
 				"dependsOn": [],
 				"userProperties": [],
 				"typeProperties": {
-					"waitTimeInSeconds": 1
+					"variableName": "StartDate",
+					"value": "@startOfMonth(adddays(startOfMonth(utcnow()),-1))\n"
+				}
+			},
+			{
+				"name": "LastDayOfPreviousMonth",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "EndDate",
+					"value": "@concat(formatDateTime(adddays(startOfMonth(utcnow()),-1),'yyyy-MM-dd'),'T23:59:00Z')\n"
 				}
 			}
 		],
+		"variables": {
+			"StartDate": {
+				"type": "String"
+			},
+			"EndDate": {
+				"type": "String"
+			}
+		},
 		"folder": {
 			"name": "finGrid"
 		},
