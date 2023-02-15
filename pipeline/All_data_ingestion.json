@@ -95,6 +95,26 @@
 						"Waitsec": 30
 					}
 				}
+			},
+			{
+				"name": "FinGridAPILoad",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Datawarehouse Loading",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "FinGridAPILoad",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
 			}
 		],
 		"folder": {
