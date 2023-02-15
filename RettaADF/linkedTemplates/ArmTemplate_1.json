@@ -480,6 +480,337 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DS_FinGridAPI')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_FinGridApi",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"relativeurl": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@dataset().relativeurl",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TempTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "RettaDW",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "TempEnergy_Coeff_Monthly"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/FinGridAPILoad')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "FirstDayOfPreviousMonth",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "StartDate",
+							"value": {
+								"value": "@replace(startOfMonth(adddays(startOfMonth(utcnow()),-1)),'00.0000000Z','00Z')\n",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "LastDayOfPreviousMonth",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "EndDate",
+							"value": {
+								"value": "@concat(formatDateTime(adddays(startOfMonth(utcnow()),-1),'yyyy-MM-dd'),'T23:59:00Z')\n",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Save In TempEnergy_Coeff_Monthly",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "FirstDayOfPreviousMonth",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "LastDayOfPreviousMonth",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET",
+								"paginationRules": {
+									"supportRFC5988": "true"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false,
+								"tableOption": "autoCreate",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "$['value']"
+										},
+										"sink": {
+											"name": "value",
+											"type": "Double"
+										}
+									},
+									{
+										"source": {
+											"path": "$['start_time']"
+										},
+										"sink": {
+											"name": "start_time",
+											"type": "DateTime"
+										}
+									},
+									{
+										"source": {
+											"path": "$['end_time']"
+										},
+										"sink": {
+											"name": "end_time",
+											"type": "DateTime"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_FinGridAPI",
+								"type": "DatasetReference",
+								"parameters": {
+									"relativeurl": {
+										"value": "@concat('?start_time=',variables('StartDate'),'&end_time=',variables('EndDate'))",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "TempTable",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Load Energy_Coeff_Monthly",
+						"type": "Script",
+						"dependsOn": [
+							{
+								"activity": "Save In TempEnergy_Coeff_Monthly",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "RettaDW",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "Query",
+									"text": "insert into [dbo].Energy_Coeff_Monthly([mnthly_AvgVal],[mnthly_strt_dt],[mnthly_end_dt],energy_type,country_code,data_source)\n\nSELECT \n\tavG([value])[mnthly_AvgVal],\n\tMIN(cast(start_time as date))  [mnthly_strt_dt],\n\tMAX(cast(end_time as date))[mnthly_end_dt],\n\t'Electricity' energy_type ,\n\t'FIN' country_code,\n\t'FinGrid' data_source \nFROM \n\t[dbo].TempEnergy_Coeff_Monthly\ngroup by \n\tConcat(cast(substring(convert(varchar, dateadd(month, datediff(month, 0, start_time) , 0), 112), 0, 7) as int),'01')\nhaving  \n\tMIN(cast(start_time as date)) not in (select distinct cast([mnthly_strt_dt]as date) from [dbo].Energy_Coeff_Monthly)"
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					},
+					{
+						"name": "Remove TempEnergy_Coeff_Monthly",
+						"description": "Remove TempEnergy_Coeff_Monthly from the DW",
+						"type": "Script",
+						"dependsOn": [
+							{
+								"activity": "Load Energy_Coeff_Monthly",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "RettaDW",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "Query",
+									"text": "\ndrop table [dbo].TempEnergy_Coeff_Monthly"
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					},
+					{
+						"name": "Electric_Coeff_Rolling_12M",
+						"description": "Save data in Electric_Coeff_Rolling_12M Table ",
+						"type": "Script",
+						"dependsOn": [
+							{
+								"activity": "Remove TempEnergy_Coeff_Monthly",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "RettaDW",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "Query",
+									"text": ";WITH data AS (\n  SELECT \n    mnthly_strt_dt, \n    mnthly_AvgVal,\n    ROW_NUMBER() OVER (ORDER BY mnthly_strt_dt) AS row_num\n  FROM \n\tEnergy_Coeff_Monthly\n), \nsum_data AS (\n  SELECT \n\trow_num,\n\tmnthly_AvgVal,\n    mnthly_strt_dt, \n    SUM(mnthly_AvgVal) OVER (ORDER BY mnthly_strt_dt ROWS BETWEEN 11 PRECEDING AND CURRENT ROW) AS sum_mnthly_AvgVal\n  FROM \n\tdata\n),FindRolling as\n(\nSELECT \n  mnthly_strt_dt, \n  mnthly_AvgVal,row_num,\n  sum_mnthly_AvgVal / 12 AS Coeff_Rolling_12M\nFROM \n\tsum_data \nWHERE \n\trow_num >= 12\n)\n\n---Insert Data in Electric_Coeff_Rolling_12M Table--\nINSERT INTO [dbo].Electric_Coeff_Rolling_12M (Fk_energy_coeff_monthly_Id,coeff_rolling_12m)\n\tSELECT \n\t\tid,\n\t\tCoeff_Rolling_12M\n\tFROM \n\t\tFindRolling fin \n\t\t\tRIGHT JOIN dbo.Energy_Coeff_Monthly en ON fin.mnthly_strt_dt=en.mnthly_strt_dt\n\tWHERE \n\t\tid NOT IN (SELECT Fk_energy_coeff_monthly_Id FROM  [dbo].Electric_Coeff_Rolling_12M)\n\n\n"
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					},
+					{
+						"name": "Save In CO2emission",
+						"description": "Save data in CO2emission",
+						"type": "Script",
+						"dependsOn": [
+							{
+								"activity": "Electric_Coeff_Rolling_12M",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "RettaDW",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "Query",
+									"text": "INSERT INTO [dbo].[CO2_emission]\n           ([building_ID]\n           ,[site_ID]\n           ,[building_name]\n           ,[Heating_Network]\n           ,[Company_ID]\n           ,[Network_ID]\n           ,[yrmnth]\n           ,[energy_type]\n           ,[rolling_12m_units]\n           ,[Total_emission_energy_cal]\n           ,[Total_emission_efficiency_cal])\n\nSELECT DISTINCT\n\tdi_bui.building_ID,\n\tdi_sit.site_id,\n\tdi_sit.street AS building_name,\n\tdi_sit.Heating_Network,\n\tdi_sit.company_id,\n\tdi_sit.network_id,\n\tcast(format(en_coe.mnthly_strt_dt,'yyyyMM') AS int) AS [yrmnth],\n\ten_mon_bui.energy_type AS energy_type,\n\ten_mon_bui.q_total AS rolling_12_units,\n\ten_mon_bui.q_total* fin.coeff_rolling_12m/100000 AS Total_emission_energy_cal,\n\tNULL AS Total_emission_efficiency_cal\nFROM\n    Energy_Coeff_Monthly  en_coe\n\tINNER JOIN [dbo].Electric_Coeff_Rolling_12M fin on fin.Fk_energy_coeff_monthly_id=en_coe.id\n\tINNER JOIN [dbo].[energy_monthly_building] en_mon_bui on en_mon_bui.mnthly_strt_dt=en_coe.mnthly_strt_dt\n\tINNER JOIN [dbo].[dim_building] di_bui on di_bui.building_ID=en_mon_bui.building_ID\n\tINNER JOIN [dbo].[dim_site] di_sit on di_sit.site_ID=di_bui.site_ID\n\t\nWHERE \n\tlower(en_mon_bui.energy_type)='electricity' and  \n\tdi_bui.Rec_Status='Active' and\n\tdi_sit.Rec_Status='Active'\t \n\tand Concat(di_bui.building_ID,di_sit.site_id,cast(format(en_coe.mnthly_strt_dt,'yyyyMM') AS int) ) NOT IN (select distinct concat( building_id,site_id,yrmnth ) from [dbo].[CO2_emission] where lower(energy_type)='electricity' )\n\nORDER BY \n\t1\n\n"
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"StartDate": {
+						"type": "String"
+					},
+					"EndDate": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "finGrid"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_FinGridAPI')]",
+				"[concat(variables('factoryId'), '/datasets/TempTable')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/get_current_weather')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -681,379 +1012,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/metryIntg')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Sharepoint_data')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "Sharepoint_data_ingestion",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2022-08-24T11:51:00Z",
-						"timeZone": "UTC",
-						"schedule": {
-							"minutes": [
-								0
-							],
-							"hours": [
-								5,
-								9,
-								16
-							]
-						}
-					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/active_meters')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Copy data1",
-						"description": "Save active meters in datalake.",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "RestSource",
-								"httpRequestTimeout": "00:01:40",
-								"requestInterval": "00.00:00:00.010",
-								"requestMethod": "GET",
-								"paginationRules": {
-									"supportRFC5988": "true"
-								}
-							},
-							"sink": {
-								"type": "JsonSink",
-								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings"
-								},
-								"formatSettings": {
-									"type": "JsonWriteSettings"
-								}
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "metryDS",
-								"type": "DatasetReference",
-								"parameters": {
-									"endpoint": {
-										"value": "@concat('meters?','box=',pipeline().parameters.box,'&','limit=',pipeline().parameters.limit)",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "active_meters_stg",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					},
-					{
-						"name": "save active_meters",
-						"type": "WebActivity",
-						"dependsOn": [
-							{
-								"activity": "Copy data1",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
-							"method": "POST",
-							"headers": {
-								"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
-							},
-							"body": {
-								"job_id": 470567759038934
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"parameters": {
-					"box": {
-						"type": "string",
-						"defaultValue": "active"
-					},
-					"limit": {
-						"type": "string",
-						"defaultValue": "10000"
-					},
-					"Waitsec": {
-						"type": "int",
-						"defaultValue": 10
-					}
-				},
-				"folder": {
-					"name": "energy_pipelines"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/metryDS')]",
-				"[concat(variables('factoryId'), '/datasets/active_meters_stg')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/daily_history')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "adding years",
-						"type": "ForEach",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@range(pipeline().parameters.startyear,pipeline().parameters.noofyears)",
-								"type": "Expression"
-							},
-							"isSequential": true,
-							"activities": [
-								{
-									"name": "Append variable1",
-									"type": "AppendVariable",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"variableName": "year",
-										"value": {
-											"value": "@add(item(),1)",
-											"type": "Expression"
-										}
-									}
-								}
-							]
-						}
-					},
-					{
-						"name": "metry_call",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "adding years",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
-							{
-								"activity": "Lookup1",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@variables('year')",
-								"type": "Expression"
-							},
-							"isSequential": true,
-							"activities": [
-								{
-									"name": "Copy data1",
-									"type": "Copy",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "RestSource",
-											"httpRequestTimeout": "00:01:40",
-											"requestInterval": "00.00:00:00.010",
-											"requestMethod": "GET",
-											"additionalHeaders": {
-												"Authorization": "Bearer 722090723400a9181120f957636348769bae76b0cef705721e3884217ec8"
-											},
-											"paginationRules": {
-												"supportRFC5988": "true"
-											}
-										},
-										"sink": {
-											"type": "JsonSink",
-											"storeSettings": {
-												"type": "AzureBlobFSWriteSettings"
-											},
-											"formatSettings": {
-												"type": "JsonWriteSettings"
-											}
-										},
-										"enableStaging": false
-									},
-									"inputs": [
-										{
-											"referenceName": "metryDS",
-											"type": "DatasetReference",
-											"parameters": {
-												"endpoint": {
-													"value": "@concat('consumptions/multi/day/',item(),'/?meters=',activity('Lookup1').output.firstRow._1)",
-													"type": "Expression"
-												}
-											}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "history_daily",
-											"type": "DatasetReference",
-											"parameters": {
-												"year": {
-													"value": "@item()",
-													"type": "Expression"
-												}
-											}
-										}
-									]
-								}
-							]
-						}
-					},
-					{
-						"name": "daily_history code",
-						"type": "WebActivity",
-						"dependsOn": [
-							{
-								"activity": "metry_call",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
-							"method": "POST",
-							"headers": {
-								"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
-							},
-							"body": {
-								"job_id": 281403025512507
-							}
-						}
-					},
-					{
-						"name": "Lookup1",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobFSReadSettings",
-									"recursive": true,
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"dataset": {
-								"referenceName": "activemeter_list",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"parameters": {
-					"startyear": {
-						"type": "int",
-						"defaultValue": 2017
-					},
-					"noofyears": {
-						"type": "int",
-						"defaultValue": 5
-					}
-				},
-				"variables": {
-					"year": {
-						"type": "Array",
-						"defaultValue": []
-					}
-				},
-				"folder": {
-					"name": "energy_pipelines"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/activemeter_list')]",
-				"[concat(variables('factoryId'), '/datasets/metryDS')]",
-				"[concat(variables('factoryId'), '/datasets/history_daily')]"
 			]
 		}
 	]
