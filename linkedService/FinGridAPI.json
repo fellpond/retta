@@ -1,0 +1,13 @@
+{
+	"name": "FinGridAPI",
+	"properties": {
+		"description": "this is a open API and will return value based on DateRange",
+		"annotations": [],
+		"type": "HttpServer",
+		"typeProperties": {
+			"url": "https://api.fingrid.fi/v1/variable/265/events/json",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		}
+	}
+}
