@@ -21,36 +21,6 @@
 					"variableName": "EndDate",
 					"value": "@concat(formatDateTime(adddays(startOfMonth(utcnow()),-1),'yyyy-MM-dd'),'T23:59:00Z')\n"
 				}
-			},
-			{
-				"name": "SaveData In TempEnergy_Coeff_Monthly",
-				"description": "we are saving data from API to Temporary table s data from API comes for every 3 minutes for the given range",
-				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "FirstDayOfPreviousMonth",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					},
-					{
-						"activity": "LastDayOfPreviousMonth",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"enableStaging": false
-				}
 			}
 		],
 		"variables": {
