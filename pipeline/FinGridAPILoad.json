@@ -9,7 +9,10 @@
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "StartDate",
-					"value": "@startOfMonth(adddays(startOfMonth(utcnow()),-1))\n"
+					"value": {
+						"value": "@startOfMonth(adddays(startOfMonth(utcnow()),-1))\n",
+						"type": "Expression"
+					}
 				}
 			},
 			{
@@ -19,8 +22,61 @@
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "EndDate",
-					"value": "@concat(formatDateTime(adddays(startOfMonth(utcnow()),-1),'yyyy-MM-dd'),'T23:59:00Z')\n"
+					"value": {
+						"value": "@concat(formatDateTime(adddays(startOfMonth(utcnow()),-1),'yyyy-MM-dd'),'T23:59:00Z')\n",
+						"type": "Expression"
+					}
 				}
+			},
+			{
+				"name": "SaveData In TempEnergy_Coeff_Monthly",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "FirstDayOfPreviousMonth",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "LastDayOfPreviousMonth",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_FinGridAPI",
+						"type": "DatasetReference",
+						"parameters": {
+							"relativeurl": {
+								"value": "@concat('?start_time=',variables('StartDate'),'&end_time=',variables('EndDate'))",
+								"type": "Expression"
+							}
+						}
+					}
+				]
 			}
 		],
 		"variables": {
