@@ -19,6 +19,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'functionKey' of 'AzureFunction1'"
 		},
+		"RettaDW_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'RettaDW'"
+		},
 		"WeatherBlobStorage_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'WeatherBlobStorage'"
@@ -26,10 +30,6 @@
 		"blob_Weather_Location_Config_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'blob_Weather_Location_Config'"
-		},
-		"RettaDW_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'RettaDW'"
 		},
 		"Accuweather_properties_typeProperties_url": {
 			"type": "string",
@@ -51,6 +51,10 @@
 			"type": "string",
 			"defaultValue": "https://rettakvault.vault.azure.net/"
 		},
+		"LS_FinGridApi_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://api.fingrid.fi/v1/variable/265/events/json"
+		},
 		"WeatherAPI_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "http://dataservice.accuweather.com/currentconditions/v1/"
@@ -58,10 +62,6 @@
 		"WeatherAPIParam_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "@concat('http://dataservice.accuweather.com/currentconditions/v1/',linkedService().location_key_param,'?apikey=8DUFt2aT98g8GAPZmTfIZ8srP9Ezj6Gy&details=true')"
-		},
-		"LS_FinGridApi_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://api.fingrid.fi/v1/variable/265/events/json"
 		}
 	},
 	"variables": {
@@ -881,6 +881,34 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/LS_FinGridApi')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('LS_FinGridApi_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RettaDW')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('RettaDW_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/WeatherAPI')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -1001,34 +1029,6 @@
 			"properties": {
 				"type": "SelfHosted",
 				"typeProperties": {}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/LS_FinGridApi')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "RestService",
-				"typeProperties": {
-					"url": "[parameters('LS_FinGridApi_properties_typeProperties_url')]",
-					"enableServerCertificateValidation": true,
-					"authenticationType": "Anonymous"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/RettaDW')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureSqlDatabase",
-				"typeProperties": {
-					"connectionString": "[parameters('RettaDW_connectionString')]"
-				}
 			},
 			"dependsOn": []
 		},

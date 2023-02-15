@@ -19,6 +19,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'functionKey' of 'AzureFunction1'"
 		},
+		"RettaDW_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'RettaDW'"
+		},
 		"WeatherBlobStorage_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'WeatherBlobStorage'"
@@ -26,10 +30,6 @@
 		"blob_Weather_Location_Config_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'blob_Weather_Location_Config'"
-		},
-		"RettaDW_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'RettaDW'"
 		},
 		"Accuweather_properties_typeProperties_url": {
 			"type": "string",
@@ -51,6 +51,10 @@
 			"type": "string",
 			"defaultValue": "https://rettakvault.vault.azure.net/"
 		},
+		"LS_FinGridApi_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://api.fingrid.fi/v1/variable/265/events/json"
+		},
 		"WeatherAPI_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "http://dataservice.accuweather.com/currentconditions/v1/"
@@ -66,10 +70,6 @@
 		"metryIntg_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://app.metry.io/api/v2/"
-		},
-		"LS_FinGridApi_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://api.fingrid.fi/v1/variable/265/events/json"
 		},
 		"containerUri": {
 			"type": "string",
@@ -107,14 +107,14 @@
 					"AzureFunction1_functionKey": {
 						"value": "[parameters('AzureFunction1_functionKey')]"
 					},
+					"RettaDW_connectionString": {
+						"value": "[parameters('RettaDW_connectionString')]"
+					},
 					"WeatherBlobStorage_connectionString": {
 						"value": "[parameters('WeatherBlobStorage_connectionString')]"
 					},
 					"blob_Weather_Location_Config_connectionString": {
 						"value": "[parameters('blob_Weather_Location_Config_connectionString')]"
-					},
-					"RettaDW_connectionString": {
-						"value": "[parameters('RettaDW_connectionString')]"
 					},
 					"Accuweather_properties_typeProperties_url": {
 						"value": "[parameters('Accuweather_properties_typeProperties_url')]"
@@ -131,14 +131,14 @@
 					"AzureKeyVaultRetta_properties_typeProperties_baseUrl": {
 						"value": "[parameters('AzureKeyVaultRetta_properties_typeProperties_baseUrl')]"
 					},
+					"LS_FinGridApi_properties_typeProperties_url": {
+						"value": "[parameters('LS_FinGridApi_properties_typeProperties_url')]"
+					},
 					"WeatherAPI_properties_typeProperties_url": {
 						"value": "[parameters('WeatherAPI_properties_typeProperties_url')]"
 					},
 					"WeatherAPIParam_properties_typeProperties_url": {
 						"value": "[parameters('WeatherAPIParam_properties_typeProperties_url')]"
-					},
-					"LS_FinGridApi_properties_typeProperties_url": {
-						"value": "[parameters('LS_FinGridApi_properties_typeProperties_url')]"
 					}
 				}
 			},

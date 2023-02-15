@@ -19,6 +19,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'functionKey' of 'AzureFunction1'"
 		},
+		"RettaDW_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'RettaDW'"
+		},
 		"WeatherBlobStorage_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'WeatherBlobStorage'"
@@ -26,10 +30,6 @@
 		"blob_Weather_Location_Config_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'blob_Weather_Location_Config'"
-		},
-		"RettaDW_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'RettaDW'"
 		},
 		"Accuweather_properties_typeProperties_url": {
 			"type": "string",
@@ -51,6 +51,10 @@
 			"type": "string",
 			"defaultValue": "https://rettakvault.vault.azure.net/"
 		},
+		"LS_FinGridApi_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://api.fingrid.fi/v1/variable/265/events/json"
+		},
 		"WeatherAPI_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "http://dataservice.accuweather.com/currentconditions/v1/"
@@ -66,10 +70,6 @@
 		"metryIntg_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://app.metry.io/api/v2/"
-		},
-		"LS_FinGridApi_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://api.fingrid.fi/v1/variable/265/events/json"
 		}
 	},
 	"variables": {
@@ -474,7 +474,12 @@
 							"secureOutput": false,
 							"secureInput": false
 						},
-						"userProperties": [],
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "dbo.TempEnergy_Coeff_Monthly"
+							}
+						],
 						"typeProperties": {
 							"source": {
 								"type": "RestSource",
@@ -688,10 +693,12 @@
 				},
 				"variables": {
 					"StartDate": {
-						"type": "String"
+						"type": "String",
+						"defaultValue": "2023-01-10T00:00:00Z"
 					},
 					"EndDate": {
-						"type": "String"
+						"type": "String",
+						"defaultValue": "2023-01-10T00:00:00Z"
 					}
 				},
 				"folder": {
@@ -2527,6 +2534,55 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DS_FinGridAPI')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_FinGridApi",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"relativeurl": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@dataset().relativeurl",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_FinGridApi')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TempTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "RettaDW",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "TempEnergy_Coeff_Monthly"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/RettaDW')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/WeatherDS')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -3041,6 +3097,21 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/LS_FinGridApi')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('LS_FinGridApi_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/RettaDBrcks')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -3071,6 +3142,19 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureKeyVaultRetta')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RettaDW')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('RettaDW_connectionString')]"
+				}
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/WeatherAPI')]",
@@ -3354,83 +3438,6 @@
 				"typeProperties": {}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/LS_FinGridApi')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "RestService",
-				"typeProperties": {
-					"url": "[parameters('LS_FinGridApi_properties_typeProperties_url')]",
-					"enableServerCertificateValidation": true,
-					"authenticationType": "Anonymous"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DS_FinGridAPI')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LS_FinGridApi",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"relativeurl": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "RestResource",
-				"typeProperties": {
-					"relativeUrl": {
-						"value": "@dataset().relativeurl",
-						"type": "Expression"
-					}
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_FinGridApi')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/RettaDW')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureSqlDatabase",
-				"typeProperties": {
-					"connectionString": "[parameters('RettaDW_connectionString')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/TempTable')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "RettaDW",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "TempEnergy_Coeff_Monthly"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/RettaDW')]"
-			]
 		}
 	]
 }

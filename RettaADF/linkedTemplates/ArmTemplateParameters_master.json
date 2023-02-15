@@ -14,13 +14,13 @@
 		"AzureFunction1_functionKey": {
 			"value": ""
 		},
+		"RettaDW_connectionString": {
+			"value": ""
+		},
 		"WeatherBlobStorage_connectionString": {
 			"value": ""
 		},
 		"blob_Weather_Location_Config_connectionString": {
-			"value": ""
-		},
-		"RettaDW_connectionString": {
 			"value": ""
 		},
 		"Accuweather_properties_typeProperties_url": {
@@ -38,6 +38,9 @@
 		"AzureKeyVaultRetta_properties_typeProperties_baseUrl": {
 			"value": "https://rettakvault.vault.azure.net/"
 		},
+		"LS_FinGridApi_properties_typeProperties_url": {
+			"value": "https://api.fingrid.fi/v1/variable/265/events/json"
+		},
 		"WeatherAPI_properties_typeProperties_url": {
 			"value": "http://dataservice.accuweather.com/currentconditions/v1/"
 		},
@@ -49,9 +52,6 @@
 		},
 		"metryIntg_properties_typeProperties_url": {
 			"value": "https://app.metry.io/api/v2/"
-		},
-		"LS_FinGridApi_properties_typeProperties_url": {
-			"value": "https://api.fingrid.fi/v1/variable/265/events/json"
 		},
 		"containerUri": {
 			"value": ""
