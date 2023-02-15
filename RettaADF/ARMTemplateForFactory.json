@@ -179,6 +179,27 @@
 								"Waitsec": 30
 							}
 						}
+					},
+					{
+						"name": "FinGridAPILoad",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Datawarehouse Loading",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "FinGridAPILoad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"policy": {
@@ -195,7 +216,8 @@
 				"[concat(variables('factoryId'), '/pipelines/energy_hrly_ld')]",
 				"[concat(variables('factoryId'), '/pipelines/energy_dly_mnthly_ld')]",
 				"[concat(variables('factoryId'), '/pipelines/Loading_datawarehouse')]",
-				"[concat(variables('factoryId'), '/pipelines/CO2_fetch_parse')]"
+				"[concat(variables('factoryId'), '/pipelines/CO2_fetch_parse')]",
+				"[concat(variables('factoryId'), '/pipelines/FinGridAPILoad')]"
 			]
 		},
 		{
