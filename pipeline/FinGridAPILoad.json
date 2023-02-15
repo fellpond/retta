@@ -10,7 +10,7 @@
 				"typeProperties": {
 					"variableName": "StartDate",
 					"value": {
-						"value": "@startOfMonth(adddays(startOfMonth(utcnow()),-1))\n",
+						"value": "@replace(startOfMonth(adddays(startOfMonth(utcnow()),-1)),'00.0000000Z','00Z')\n",
 						"type": "Expression"
 					}
 				}
@@ -29,7 +29,7 @@
 				}
 			},
 			{
-				"name": "SaveData In TempEnergy_Coeff_Monthly",
+				"name": "Save In TempEnergy_Coeff_Monthly",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -70,7 +70,39 @@
 						"tableOption": "autoCreate",
 						"disableMetricsCollection": false
 					},
-					"enableStaging": false
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "$['value']"
+								},
+								"sink": {
+									"name": "value",
+									"type": "Double"
+								}
+							},
+							{
+								"source": {
+									"path": "$['start_time']"
+								},
+								"sink": {
+									"name": "start_time",
+									"type": "DateTime"
+								}
+							},
+							{
+								"source": {
+									"path": "$['end_time']"
+								},
+								"sink": {
+									"name": "end_time",
+									"type": "DateTime"
+								}
+							}
+						]
+					}
 				},
 				"inputs": [
 					{
@@ -90,6 +122,39 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "Load Energy_Coeff_Monthly",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "Save In TempEnergy_Coeff_Monthly",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "RettaDW",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "insert into [dbo].Energy_Coeff_Monthly([mnthly_AvgVal],[mnthly_strt_dt],[mnthly_end_dt],energy_type,country_code,data_source)\n\nSELECT \n\tavG([value])[mnthly_AvgVal],\n\tMIN(cast(start_time as date))  [mnthly_strt_dt],\n\tMAX(cast(end_time as date))[mnthly_end_dt],\n\t'Electricity' energy_type ,\n\t'FIN' country_code,\n\t'FinGrid' data_source \nFROM \n\t[dbo].TempEnergy_Coeff_Monthly\ngroup by \n\tConcat(cast(substring(convert(varchar, dateadd(month, datediff(month, 0, start_time) , 0), 112), 0, 7) as int),'01')\nhaving  \n\tMIN(cast(start_time as date)) not in (select distinct cast([mnthly_strt_dt]as date) from [dbo].Energy_Coeff_Monthly)"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
 			}
 		],
 		"variables": {
