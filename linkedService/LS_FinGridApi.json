@@ -1,0 +1,12 @@
+{
+	"name": "LS_FinGridApi",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://api.fingrid.fi/v1/variable/265/events/json",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		}
+	}
+}
