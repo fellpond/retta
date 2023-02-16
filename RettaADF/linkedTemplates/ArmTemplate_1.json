@@ -684,7 +684,7 @@
 							"scripts": [
 								{
 									"type": "Query",
-									"text": "insert into [dbo].Energy_Coeff_Monthly([mnthly_AvgVal],[mnthly_strt_dt],[mnthly_end_dt],energy_type,country_code,data_source)\n\nSELECT \n\tavG([value])[mnthly_AvgVal],\n\tMIN(cast(start_time as date))  [mnthly_strt_dt],\n\tMAX(cast(end_time as date))[mnthly_end_dt],\n\t'Electricity' energy_type ,\n\t'FIN' country_code,\n\t'FinGrid' data_source \nFROM \n\t[dbo].TempEnergy_Coeff_Monthly\ngroup by \n\tConcat(cast(substring(convert(varchar, dateadd(month, datediff(month, 0, start_time) , 0), 112), 0, 7) as int),'01')\nhaving  \n\tMIN(cast(start_time as date)) not in (select distinct cast([mnthly_strt_dt]as date) from [dbo].Energy_Coeff_Monthly)"
+									"text": "insert into [dbo].Energy_Coeff_Monthly([mnthly_AvgVal],[mnthly_strt_dt],[mnthly_end_dt],energy_type,country_code,data_source,YrMnth)\n\nSELECT \n\tavG([value])[mnthly_AvgVal],\n\tMIN(cast(start_time as date))  [mnthly_strt_dt],\n\tMAX(cast(end_time as date))[mnthly_end_dt],\n\t'Electricity' energy_type ,\n\t'FIN' country_code,\n\t'FinGrid' data_source ,\n\tCONCAT(YEAR(MIN(cast(start_time as date))),FORMAT(MIN(cast(start_time as date)),'MM') ) as YrMnth\n\tFROM \n\t[dbo].TempEnergy_Coeff_Monthly\ngroup by \n\tConcat(cast(substring(convert(varchar, dateadd(month, datediff(month, 0, start_time) , 0), 112), 0, 7) as int),'01')\nhaving  \n\tMIN(cast(start_time as date)) not in (select distinct cast([mnthly_strt_dt]as date) from [dbo].Energy_Coeff_Monthly)\n\n"
 								}
 							],
 							"scriptBlockExecutionTimeout": "02:00:00"
@@ -725,8 +725,8 @@
 						}
 					},
 					{
-						"name": "Electric_Coeff_Rolling_12M",
-						"description": "Save data in Electric_Coeff_Rolling_12M Table ",
+						"name": "Update Electric_Coeff_Rolling_12M",
+						"description": "Updpte data for rolling 12month",
 						"type": "Script",
 						"dependsOn": [
 							{
@@ -752,7 +752,7 @@
 							"scripts": [
 								{
 									"type": "Query",
-									"text": ";WITH data AS (\n  SELECT \n    mnthly_strt_dt, \n    mnthly_AvgVal,\n    ROW_NUMBER() OVER (ORDER BY mnthly_strt_dt) AS row_num\n  FROM \n\tEnergy_Coeff_Monthly\n), \nsum_data AS (\n  SELECT \n\trow_num,\n\tmnthly_AvgVal,\n    mnthly_strt_dt, \n    SUM(mnthly_AvgVal) OVER (ORDER BY mnthly_strt_dt ROWS BETWEEN 11 PRECEDING AND CURRENT ROW) AS sum_mnthly_AvgVal\n  FROM \n\tdata\n),FindRolling as\n(\nSELECT \n  mnthly_strt_dt, \n  mnthly_AvgVal,row_num,\n  sum_mnthly_AvgVal / 12 AS Coeff_Rolling_12M\nFROM \n\tsum_data \nWHERE \n\trow_num >= 12\n)\n\n---Insert Data in Electric_Coeff_Rolling_12M Table--\nINSERT INTO [dbo].Electric_Coeff_Rolling_12M (Fk_energy_coeff_monthly_Id,coeff_rolling_12m)\n\tSELECT \n\t\tid,\n\t\tCoeff_Rolling_12M\n\tFROM \n\t\tFindRolling fin \n\t\t\tRIGHT JOIN dbo.Energy_Coeff_Monthly en ON fin.mnthly_strt_dt=en.mnthly_strt_dt\n\tWHERE \n\t\tid NOT IN (SELECT Fk_energy_coeff_monthly_Id FROM  [dbo].Electric_Coeff_Rolling_12M)\n\n\n"
+									"text": ";WITH data AS (\n  SELECT \n    mnthly_strt_dt, \n    mnthly_AvgVal,\n    ROW_NUMBER() OVER (ORDER BY mnthly_strt_dt) AS row_num\n  FROM \n\tEnergy_Coeff_Monthly\n), \nsum_data AS (\n  SELECT \n\trow_num,\n\tmnthly_AvgVal,\n    mnthly_strt_dt, \n    SUM(mnthly_AvgVal) OVER (ORDER BY mnthly_strt_dt ROWS BETWEEN 11 PRECEDING AND CURRENT ROW) AS sum_mnthly_AvgVal\n  FROM \n\tdata\n),FindRolling as\n(\nSELECT \n  mnthly_strt_dt, \n  mnthly_AvgVal,row_num,\n  sum_mnthly_AvgVal / 12 AS Coeff_Rolling_12M\nFROM \n\tsum_data \nWHERE \n\trow_num >= 12\n)\n--select * \nUpdate en_co_mon\nset rolling_12m_units=Coeff_Rolling_12M\nfrom \n\tFindRolling fin Inner join [dbo].[energy_coeff_Monthly] en_co_mon\non fin.mnthly_strt_dt=en_co_mon.mnthly_strt_dt\n\n\n\n"
 								}
 							],
 							"scriptBlockExecutionTimeout": "02:00:00"
@@ -764,7 +764,7 @@
 						"type": "Script",
 						"dependsOn": [
 							{
-								"activity": "Electric_Coeff_Rolling_12M",
+								"activity": "Update Electric_Coeff_Rolling_12M",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -786,7 +786,7 @@
 							"scripts": [
 								{
 									"type": "Query",
-									"text": "INSERT INTO [dbo].[CO2_emission]\n           ([building_ID]\n           ,[site_ID]\n           ,[building_name]\n           ,[Heating_Network]\n           ,[Company_ID]\n           ,[Network_ID]\n           ,[yrmnth]\n           ,[energy_type]\n           ,[rolling_12m_units]\n           ,[Total_emission_energy_cal]\n           ,[Total_emission_efficiency_cal])\n\nSELECT DISTINCT\n\tdi_bui.building_ID,\n\tdi_sit.site_id,\n\tdi_sit.street AS building_name,\n\tdi_sit.Heating_Network,\n\tdi_sit.company_id,\n\tdi_sit.network_id,\n\tcast(format(en_coe.mnthly_strt_dt,'yyyyMM') AS int) AS [yrmnth],\n\ten_mon_bui.energy_type AS energy_type,\n\ten_mon_bui.q_total AS rolling_12_units,\n\ten_mon_bui.q_total* fin.coeff_rolling_12m/100000 AS Total_emission_energy_cal,\n\tNULL AS Total_emission_efficiency_cal\nFROM\n    Energy_Coeff_Monthly  en_coe\n\tINNER JOIN [dbo].Electric_Coeff_Rolling_12M fin on fin.Fk_energy_coeff_monthly_id=en_coe.id\n\tINNER JOIN [dbo].[energy_monthly_building] en_mon_bui on en_mon_bui.mnthly_strt_dt=en_coe.mnthly_strt_dt\n\tINNER JOIN [dbo].[dim_building] di_bui on di_bui.building_ID=en_mon_bui.building_ID\n\tINNER JOIN [dbo].[dim_site] di_sit on di_sit.site_ID=di_bui.site_ID\n\t\nWHERE \n\tlower(en_mon_bui.energy_type)='electricity' and  \n\tdi_bui.Rec_Status='Active' and\n\tdi_sit.Rec_Status='Active'\t \n\tand Concat(di_bui.building_ID,di_sit.site_id,cast(format(en_coe.mnthly_strt_dt,'yyyyMM') AS int) ) NOT IN (select distinct concat( building_id,site_id,yrmnth ) from [dbo].[CO2_emission] where lower(energy_type)='electricity' )\n\nORDER BY \n\t1\n\n"
+									"text": "INSERT INTO [dbo].[CO2_emission]\n           ([building_ID]\n           ,[site_ID]\n           ,[building_name]\n           ,[Heating_Network]\n           ,[Company_ID]\n           ,[Network_ID]\n           ,[yrmnth]\n           ,[energy_type]\n           ,[rolling_12m_units]\n           ,[Total_emission_energy_cal]\n           ,[Total_emission_efficiency_cal])\n\nSELECT DISTINCT\n\tdi_bui.building_ID,\n\tdi_sit.site_id,\n\tdi_sit.street AS building_name,\n\tdi_sit.Heating_Network,\n\tdi_sit.company_id,\n\tdi_sit.network_id,\n\tcast(format(en_coe.mnthly_strt_dt,'yyyyMM') AS int) AS [yrmnth],\n\ten_mon_bui.energy_type AS energy_type,\n\ten_mon_bui.q_total AS rolling_12_units,\n\ten_mon_bui.q_total* en_coe.rolling_12m_units/100000 AS Total_emission_energy_cal,\n\tNULL AS Total_emission_efficiency_cal\nFROM\n    Energy_Coeff_Monthly  en_coe\n\tINNER JOIN [dbo].[energy_monthly_building] en_mon_bui on en_mon_bui.mnthly_strt_dt=en_coe.mnthly_strt_dt\n\tINNER JOIN [dbo].[dim_building] di_bui on di_bui.building_ID=en_mon_bui.building_ID\n\tINNER JOIN [dbo].[dim_site] di_sit on di_sit.site_ID=di_bui.site_ID\n\t\nWHERE \n\tlower(en_mon_bui.energy_type)='electricity' and  \n\tdi_bui.Rec_Status='Active' and\n\tdi_sit.Rec_Status='Active'\t \n\tand Concat(di_bui.building_ID,di_sit.site_id,cast(format(en_coe.mnthly_strt_dt,'yyyyMM') AS int) ) NOT IN (select distinct concat( building_id,site_id,yrmnth ) from [dbo].[CO2_emission] where lower(energy_type)='electricity' )\n\nORDER BY \n\t1\n\n"
 								}
 							],
 							"scriptBlockExecutionTimeout": "02:00:00"
