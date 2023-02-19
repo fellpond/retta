@@ -57,6 +57,7 @@
 				}
 			}
 		],
+		"concurrency": 1,
 		"folder": {
 			"name": "Ingestion_pipeline"
 		},
