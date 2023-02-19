@@ -970,6 +970,36 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Sharepoint_data')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2022-08-24T11:51:00Z",
+						"timeZone": "UTC",
+						"schedule": {
+							"minutes": [
+								0
+							],
+							"hours": [
+								5,
+								9,
+								16
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/energy_hourly_trigger')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
@@ -1031,66 +1061,6 @@
 				"typeProperties": {}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Sharepoint_data_ingestion')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Sharepoint",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "Sharepoint_ingestion",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"JobID": "350589294007009",
-								"DatabricksWorkspaceID": "adb-1558361433928880",
-								"Waitsec": 30
-							}
-						}
-					},
-					{
-						"name": "Datawarehouse Loading",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Sharepoint",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "Loading_datawarehouse",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"folder": {
-					"name": "Ingestion_pipeline"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/Sharepoint_ingestion')]",
-				"[concat(variables('factoryId'), '/pipelines/Loading_datawarehouse')]"
-			]
 		}
 	]
 }

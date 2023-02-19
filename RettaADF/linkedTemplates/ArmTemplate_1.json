@@ -21,6 +21,63 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/Sharepoint_data_ingestion')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Sharepoint",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Sharepoint_ingestion",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"JobID": "350589294007009",
+								"DatabricksWorkspaceID": "adb-1558361433928880",
+								"Waitsec": 30
+							}
+						}
+					},
+					{
+						"name": "Datawarehouse Loading",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Sharepoint",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Loading_datawarehouse",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Ingestion_pipeline"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/DS_FinGridAPI')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -988,37 +1045,6 @@
 				"[concat(variables('factoryId'), '/datasets/site_loc_key')]",
 				"[concat(variables('factoryId'), '/datasets/WeatherDS')]",
 				"[concat(variables('factoryId'), '/datasets/WeatherSinkJson')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/metryDS')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "metryIntg",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"endpoint": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "energy_datasets/api_ds"
-				},
-				"annotations": [],
-				"type": "RestResource",
-				"typeProperties": {
-					"relativeUrl": {
-						"value": "@dataset().endpoint",
-						"type": "Expression"
-					}
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/metryIntg')]"
 			]
 		}
 	]

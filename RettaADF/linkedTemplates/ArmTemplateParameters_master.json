@@ -53,6 +53,9 @@
 		"metryIntg_properties_typeProperties_url": {
 			"value": "https://app.metry.io/api/v2/"
 		},
+		"Event_based_trigger_properties_typeProperties_scope": {
+			"value": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
 		"containerUri": {
 			"value": ""
 		},

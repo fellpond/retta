@@ -70,6 +70,10 @@
 		"metryIntg_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://app.metry.io/api/v2/"
+		},
+		"Event_based_trigger_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
 		}
 	},
 	"variables": {
@@ -3294,6 +3298,36 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Event_based_trigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Sharepoint_data_ingestion",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('Event_based_trigger_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Sharepoint_data_ingestion')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Get_weather')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
@@ -3364,16 +3398,8 @@
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "Sharepoint_data_ingestion",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
+				"runtimeState": "Stopped",
+				"pipelines": [],
 				"type": "ScheduleTrigger",
 				"typeProperties": {
 					"recurrence": {
@@ -3394,9 +3420,7 @@
 					}
 				}
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/Sharepoint_data_ingestion')]"
-			]
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/energy_hourly_trigger')]",

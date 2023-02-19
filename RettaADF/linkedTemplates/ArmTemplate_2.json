@@ -6,6 +6,10 @@
 			"type": "string",
 			"metadata": "Data Factory name",
 			"defaultValue": "RettaADF"
+		},
+		"Event_based_trigger_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
 		}
 	},
 	"variables": {
@@ -13,7 +17,36 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/Sharepoint_data')]",
+			"name": "[concat(parameters('factoryName'), '/metryDS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "metryIntg",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"endpoint": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "energy_datasets/api_ds"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@dataset().endpoint",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Event_based_trigger')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -28,24 +61,14 @@
 						"parameters": {}
 					}
 				],
-				"type": "ScheduleTrigger",
+				"type": "BlobEventsTrigger",
 				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2022-08-24T11:51:00Z",
-						"timeZone": "UTC",
-						"schedule": {
-							"minutes": [
-								0
-							],
-							"hours": [
-								5,
-								9,
-								16
-							]
-						}
-					}
+					"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('Event_based_trigger_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
 				}
 			},
 			"dependsOn": []
@@ -164,7 +187,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/metryDS')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/daily_history')]",
@@ -376,7 +401,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/metryDS')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/energy_dly_mnthly_ld')]",
@@ -621,7 +648,9 @@
 				"annotations": [],
 				"lastPublishTime": "2022-08-08T01:57:13Z"
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/metryDS')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/energy_hrly_ld')]",
@@ -894,7 +923,9 @@
 				"annotations": [],
 				"lastPublishTime": "2022-07-28T04:13:16Z"
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/metryDS')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/monthly_history')]",
@@ -1106,7 +1137,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/metryDS')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Get_weather')]",
