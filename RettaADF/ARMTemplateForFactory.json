@@ -968,6 +968,7 @@
 						}
 					}
 				],
+				"concurrency": 1,
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
@@ -3498,6 +3499,33 @@
 			"properties": {
 				"type": "SelfHosted",
 				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Is_pipeline_running')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Misc"
+				},
+				"annotations": []
 			},
 			"dependsOn": []
 		}
