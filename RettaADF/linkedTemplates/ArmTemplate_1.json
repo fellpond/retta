@@ -21,110 +21,12 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/Is_pipeline_running')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
+			"name": "[concat(parameters('factoryName'), '/integrationRuntimeLocal')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"activities": [
-					{
-						"name": "Web1",
-						"type": "WebActivity",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"url": "https://management.azure.com/subscriptions/@%7bactivity2F87963fbe-cd3c-480f-8013-6c3b4ca708c1.output.value%7d/resourceGroups/@%7bactivityRettaDW.output.value%7d/providers/Microsoft.DataFactory/factories/@%7bpipeline().DataFactory%7d/queryPipelineRuns?api-version=2018-06-01",
-							"method": "POST",
-							"headers": {
-								"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
-							},
-							"body": {
-								"value": "{ \"lastUpdatedAfter\": \"@{adddays(utcnow(),int(pipeline().parameters.QueryRunDays))}\", \"lastUpdatedBefore\": \"@{utcnow()}\", \"filters\": [ { \"operand\": \"PipelineName\", \"operator\": \"Equals\", \"values\": [ \"@{pipeline().parameters.PipelineName}\" ] }, { \"operand\": \"Status\", \"operator\": \"In\", \"values\": [ \"InProgress\", \"Queued\" ] } ] }",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "Filter1",
-						"type": "Filter",
-						"dependsOn": [
-							{
-								"activity": "Web1",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('Web1').output.value",
-								"type": "Expression"
-							},
-							"condition": {
-								"value": "@and(not(equals(item().runId,pipeline().parameters.ThisRunId)),or(equals(item().status,'InProgress'),equals(item().status,'Queued')))",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "If Condition1",
-						"type": "IfCondition",
-						"dependsOn": [
-							{
-								"activity": "Filter1",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"expression": {
-								"value": "@greaterOrEquals(int(activity('Filter1').output.FilteredItemsCount),1)",
-								"type": "Expression"
-							},
-							"ifTrueActivities": [
-								{
-									"name": "Fail1",
-									"type": "Fail",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"message": "Pipeline already running",
-										"errorCode": "Multiple_Trigger"
-									}
-								}
-							]
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"parameters": {
-					"PipelineName": {
-						"type": "string"
-					},
-					"ThisRunId": {
-						"type": "string"
-					},
-					"QueryRunDays": {
-						"type": "string",
-						"defaultValue": "-1"
-					}
-				},
-				"folder": {
-					"name": "Misc"
-				},
-				"annotations": []
+				"type": "SelfHosted",
+				"typeProperties": {}
 			},
 			"dependsOn": []
 		},
@@ -137,14 +39,7 @@
 					{
 						"name": "Sharepoint",
 						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Wait1",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
+						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -178,15 +73,6 @@
 							},
 							"waitOnCompletion": true,
 							"parameters": {}
-						}
-					},
-					{
-						"name": "Wait1",
-						"type": "Wait",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"waitTimeInSeconds": 300
 						}
 					}
 				],
