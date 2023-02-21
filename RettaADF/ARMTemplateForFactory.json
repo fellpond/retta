@@ -604,7 +604,7 @@
 							"scripts": [
 								{
 									"type": "Query",
-									"text": "insert into [dbo].Energy_Coeff_Monthly([mnthly_AvgVal],[mnthly_strt_dt],[mnthly_end_dt],energy_type,country_code,data_source,YrMnth)\n\nSELECT \n\tavG([value])[mnthly_AvgVal],\n\tMIN(cast(start_time as date))  [mnthly_strt_dt],\n\tMAX(cast(end_time as date))[mnthly_end_dt],\n\t'Electricity' energy_type ,\n\t'FIN' country_code,\n\t'FinGrid' data_source ,\n\tCONCAT(YEAR(MIN(cast(start_time as date))),FORMAT(MIN(cast(start_time as date)),'MM') ) as YrMnth\n\tFROM \n\t[dbo].TempEnergy_Coeff_Monthly\ngroup by \n\tConcat(cast(substring(convert(varchar, dateadd(month, datediff(month, 0, start_time) , 0), 112), 0, 7) as int),'01')\nhaving  \n\tMIN(cast(start_time as date)) not in (select distinct cast([mnthly_strt_dt]as date) from [dbo].Energy_Coeff_Monthly)\n\n----Below code will Update YrMnth date column-----\n\n\tUpdate Yrmn\n\tset YrMnth=cast(format(mnthly_strt_dt,'yyyyMM') AS int)\n\tfrom  [dbo].Energy_Coeff_Monthly Yrmn\n\n"
+									"text": "insert into [dbo].Energy_Coeff_Monthly([mnthly_AvgVal],[mnthly_strt_dt],[mnthly_end_dt],energy_type,country_code,data_source,YrMnth)\n\nSELECT \n\tCast(avG([value])AS DECIMAL(18,5)) [mnthly_AvgVal],\n\tMIN(cast(start_time as date))  [mnthly_strt_dt],\n\tMAX(cast(end_time as date))[mnthly_end_dt],\n\t'Electricity' energy_type ,\n\t'FIN' country_code,\n\t'FinGrid' data_source ,\n\tCONCAT(YEAR(MIN(cast(start_time as date))),FORMAT(MIN(cast(start_time as date)),'MM') ) as YrMnth\n\tFROM \n\t[dbo].TempEnergy_Coeff_Monthly\ngroup by \n\tConcat(cast(substring(convert(varchar, dateadd(month, datediff(month, 0, start_time) , 0), 112), 0, 7) as int),'01')\nhaving  \n\tMIN(cast(start_time as date)) not in (select distinct cast([mnthly_strt_dt]as date) from [dbo].Energy_Coeff_Monthly)\n\n----Below code will Update YrMnth date column-----\n\n\tUpdate Yrmn\n\tset YrMnth=cast(format(mnthly_strt_dt,'yyyyMM') AS int)\n\tfrom  [dbo].Energy_Coeff_Monthly Yrmn\n\n"
 								}
 							],
 							"scriptBlockExecutionTimeout": "02:00:00"
@@ -672,7 +672,7 @@
 							"scripts": [
 								{
 									"type": "Query",
-									"text": ";WITH data AS (\n  SELECT \n    mnthly_strt_dt, \n    mnthly_AvgVal,\n    ROW_NUMBER() OVER (ORDER BY mnthly_strt_dt) AS row_num\n  FROM \n\tEnergy_Coeff_Monthly\n), \nsum_data AS (\n  SELECT \n\trow_num,\n\tmnthly_AvgVal,\n    mnthly_strt_dt, \n    SUM(mnthly_AvgVal) OVER (ORDER BY mnthly_strt_dt ROWS BETWEEN 11 PRECEDING AND CURRENT ROW) AS sum_mnthly_AvgVal\n  FROM \n\tdata\n),FindRolling as\n(\nSELECT \n  mnthly_strt_dt, \n  mnthly_AvgVal,row_num,\n  sum_mnthly_AvgVal / 12 AS Coeff_Rolling_12M\nFROM \n\tsum_data \nWHERE \n\trow_num >= 12\n)\n--select * \nUpdate en_co_mon\nset rolling_12m_units=Coeff_Rolling_12M\nfrom \n\tFindRolling fin Inner join [dbo].[energy_coeff_Monthly] en_co_mon\non fin.mnthly_strt_dt=en_co_mon.mnthly_strt_dt\n\n\n\n"
+									"text": ";WITH data AS (\n  SELECT \n    mnthly_strt_dt, \n    mnthly_AvgVal,\n    ROW_NUMBER() OVER (ORDER BY mnthly_strt_dt) AS row_num\n  FROM \n\tEnergy_Coeff_Monthly\n), \nsum_data AS (\n  SELECT \n\trow_num,\n\tmnthly_AvgVal,\n    mnthly_strt_dt, \n    SUM(mnthly_AvgVal) OVER (ORDER BY mnthly_strt_dt ROWS BETWEEN 11 PRECEDING AND CURRENT ROW) AS sum_mnthly_AvgVal\n  FROM \n\tdata\n),FindRolling as\n(\nSELECT \n  mnthly_strt_dt, \n  mnthly_AvgVal,row_num,\n  sum_mnthly_AvgVal / 12 AS Coeff_Rolling_12M\nFROM \n\tsum_data \nWHERE \n\trow_num >= 12\n)\n--select * \nUpdate en_co_mon\nset rolling_12m_units=Cast(Coeff_Rolling_12M AS DECIMAL(18,5)) \nfrom \n\tFindRolling fin Inner join [dbo].[energy_coeff_Monthly] en_co_mon\non fin.mnthly_strt_dt=en_co_mon.mnthly_strt_dt\n\n\n\n"
 								}
 							],
 							"scriptBlockExecutionTimeout": "02:00:00"
@@ -3512,7 +3512,7 @@
 				"type": "ScheduleTrigger",
 				"typeProperties": {
 					"recurrence": {
-						"frequency": "Hour",
+						"frequency": "Day",
 						"interval": 1,
 						"startTime": "2022-08-24T11:51:00Z",
 						"timeZone": "UTC",
