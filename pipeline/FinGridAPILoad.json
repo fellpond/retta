@@ -223,7 +223,7 @@
 					"scripts": [
 						{
 							"type": "Query",
-							"text": ";WITH data AS (\n  SELECT \n    mnthly_strt_dt, \n    mnthly_AvgVal,\n    ROW_NUMBER() OVER (ORDER BY mnthly_strt_dt) AS row_num\n  FROM \n\tEnergy_Coeff_Monthly\n), \nsum_data AS (\n  SELECT \n\trow_num,\n\tmnthly_AvgVal,\n    mnthly_strt_dt, \n    SUM(mnthly_AvgVal) OVER (ORDER BY mnthly_strt_dt ROWS BETWEEN 11 PRECEDING AND CURRENT ROW) AS sum_mnthly_AvgVal\n  FROM \n\tdata\n),FindRolling as\n(\nSELECT \n  mnthly_strt_dt, \n  mnthly_AvgVal,row_num,\n  sum_mnthly_AvgVal / 12 AS Coeff_Rolling_12M\nFROM \n\tsum_data \nWHERE \n\trow_num >= 12\n)\n--select * \nUpdate en_co_mon\nset rolling_12m_units=Coeff_Rolling_12M\nfrom \n\tFindRolling fin Inner join [dbo].[energy_coeff_Monthly] en_co_mon\non fin.mnthly_strt_dt=en_co_mon.mnthly_strt_dt\n\n\n\n"
+							"text": ";WITH data AS (\n  SELECT \n    mnthly_strt_dt, \n    mnthly_AvgVal,\n    ROW_NUMBER() OVER (ORDER BY mnthly_strt_dt) AS row_num\n  FROM \n\tEnergy_Coeff_Monthly\n), \nsum_data AS (\n  SELECT \n\trow_num,\n\tmnthly_AvgVal,\n    mnthly_strt_dt, \n    SUM(mnthly_AvgVal) OVER (ORDER BY mnthly_strt_dt ROWS BETWEEN 11 PRECEDING AND CURRENT ROW) AS sum_mnthly_AvgVal\n  FROM \n\tdata\n),FindRolling as\n(\nSELECT \n  mnthly_strt_dt, \n  mnthly_AvgVal,row_num,\n  sum_mnthly_AvgVal / 12 AS Coeff_Rolling_12M\nFROM \n\tsum_data \nWHERE \n\trow_num >= 12\n)\n--select * \nUpdate en_co_mon\nset rolling_12m_units=Cast(Coeff_Rolling_12M AS DECIMAL(18,5)) \nfrom \n\tFindRolling fin Inner join [dbo].[energy_coeff_Monthly] en_co_mon\non fin.mnthly_strt_dt=en_co_mon.mnthly_strt_dt\n\n\n\n"
 						}
 					],
 					"scriptBlockExecutionTimeout": "02:00:00"
