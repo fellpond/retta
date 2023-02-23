@@ -1,0 +1,316 @@
+{
+	"name": "Sharepoint_Tables",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "sharepoint_input_config.json",
+				"folderPath": "sharepoint/config",
+				"fileSystem": "bronze"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"certificates": {
+					"type": "object",
+					"properties": {
+						"config_path": {
+							"type": "string"
+						},
+						"input_path": {
+							"type": "string"
+						},
+						"stg_path": {
+							"type": "string"
+						},
+						"stg_schema": {
+							"type": "string"
+						},
+						"stg_table": {
+							"type": "string"
+						},
+						"target_path": {
+							"type": "string"
+						},
+						"target_table": {
+							"type": "string"
+						}
+					}
+				},
+				"contract": {
+					"type": "object",
+					"properties": {
+						"config_path": {
+							"type": "string"
+						},
+						"input_path": {
+							"type": "string"
+						},
+						"stg_path": {
+							"type": "string"
+						},
+						"stg_schema": {
+							"type": "string"
+						},
+						"stg_table": {
+							"type": "string"
+						},
+						"target_path": {
+							"type": "string"
+						},
+						"target_table": {
+							"type": "string"
+						}
+					}
+				},
+				"customer": {
+					"type": "object",
+					"properties": {
+						"config_path": {
+							"type": "string"
+						},
+						"input_path": {
+							"type": "string"
+						},
+						"stg_path": {
+							"type": "string"
+						},
+						"stg_schema": {
+							"type": "string"
+						},
+						"stg_table": {
+							"type": "string"
+						},
+						"target_path": {
+							"type": "string"
+						},
+						"target_table": {
+							"type": "string"
+						}
+					}
+				},
+				"hdd": {
+					"type": "object",
+					"properties": {
+						"config_path": {
+							"type": "string"
+						},
+						"input_path": {
+							"type": "string"
+						},
+						"stg_path": {
+							"type": "string"
+						},
+						"stg_schema": {
+							"type": "string"
+						},
+						"stg_table": {
+							"type": "string"
+						},
+						"target_path": {
+							"type": "string"
+						},
+						"target_table": {
+							"type": "string"
+						}
+					}
+				},
+				"hdd_ref": {
+					"type": "object",
+					"properties": {
+						"config_path": {
+							"type": "string"
+						},
+						"input_path": {
+							"type": "string"
+						},
+						"stg_path": {
+							"type": "string"
+						},
+						"stg_schema": {
+							"type": "string"
+						},
+						"stg_table": {
+							"type": "string"
+						},
+						"target_path": {
+							"type": "string"
+						},
+						"target_table": {
+							"type": "string"
+						}
+					}
+				},
+				"investment_proposal": {
+					"type": "object",
+					"properties": {
+						"config_path": {
+							"type": "string"
+						},
+						"input_path": {
+							"type": "string"
+						},
+						"stg_path": {
+							"type": "string"
+						},
+						"stg_schema": {
+							"type": "string"
+						},
+						"stg_table": {
+							"type": "string"
+						},
+						"target_path": {
+							"type": "string"
+						},
+						"target_table": {
+							"type": "string"
+						}
+					}
+				},
+				"meter": {
+					"type": "object",
+					"properties": {
+						"config_path": {
+							"type": "string"
+						},
+						"input_path": {
+							"type": "string"
+						},
+						"stg_path": {
+							"type": "string"
+						},
+						"stg_schema": {
+							"type": "string"
+						},
+						"stg_table": {
+							"type": "string"
+						},
+						"target_path": {
+							"type": "string"
+						},
+						"target_table": {
+							"type": "string"
+						}
+					}
+				},
+				"meter_relation": {
+					"type": "object",
+					"properties": {
+						"config_path": {
+							"type": "string"
+						},
+						"input_path": {
+							"type": "string"
+						},
+						"stg_path": {
+							"type": "string"
+						},
+						"stg_schema": {
+							"type": "string"
+						},
+						"stg_table": {
+							"type": "string"
+						},
+						"target_path": {
+							"type": "string"
+						},
+						"target_table": {
+							"type": "string"
+						}
+					}
+				},
+				"operations": {
+					"type": "object",
+					"properties": {
+						"config_path": {
+							"type": "string"
+						},
+						"input_path": {
+							"type": "string"
+						},
+						"stg_path": {
+							"type": "string"
+						},
+						"stg_schema": {
+							"type": "string"
+						},
+						"stg_table": {
+							"type": "string"
+						},
+						"target_path": {
+							"type": "string"
+						},
+						"target_table": {
+							"type": "string"
+						}
+					}
+				},
+				"site": {
+					"type": "object",
+					"properties": {
+						"config_path": {
+							"type": "string"
+						},
+						"input_path": {
+							"type": "string"
+						},
+						"stg_path": {
+							"type": "string"
+						},
+						"stg_schema": {
+							"type": "string"
+						},
+						"stg_table": {
+							"type": "string"
+						},
+						"target_path": {
+							"type": "string"
+						},
+						"target_table": {
+							"type": "string"
+						},
+						"weather_loc_ds_path": {
+							"type": "string"
+						},
+						"weather_loc": {
+							"type": "string"
+						}
+					}
+				},
+				"building": {
+					"type": "object",
+					"properties": {
+						"config_path": {
+							"type": "string"
+						},
+						"input_path": {
+							"type": "string"
+						},
+						"stg_path": {
+							"type": "string"
+						},
+						"stg_schema": {
+							"type": "string"
+						},
+						"stg_table": {
+							"type": "string"
+						},
+						"target_path": {
+							"type": "string"
+						},
+						"target_table": {
+							"type": "string"
+						}
+					}
+				}
+			}
+		}
+	}
+}
