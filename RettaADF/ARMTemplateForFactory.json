@@ -1097,10 +1097,11 @@
 							"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
 							"method": "POST",
 							"headers": {
-								"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
+								"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2",
+								"table_name": "certificates"
 							},
 							"body": {
-								"value": "{\"job_id\":350589294007009, \n\"table_name\":'certificates'}",
+								"value": "{\"job_id\":350589294007009}",
 								"type": "Expression"
 							}
 						}
