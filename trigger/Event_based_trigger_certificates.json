@@ -1,5 +1,5 @@
 {
-	"name": "Event_based_trigger",
+	"name": "Event_based_trigger_certificates",
 	"properties": {
 		"annotations": [],
 		"runtimeState": "Started",
@@ -13,7 +13,7 @@
 		],
 		"type": "BlobEventsTrigger",
 		"typeProperties": {
-			"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/",
+			"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/Certificates",
 			"ignoreEmptyBlobs": true,
 			"scope": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake",
 			"events": [
