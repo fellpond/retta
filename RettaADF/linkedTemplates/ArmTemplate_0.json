@@ -725,6 +725,9 @@
 					"Waitsec": {
 						"type": "int",
 						"defaultValue": 30
+					},
+					"table_name": {
+						"type": "string"
 					}
 				},
 				"variables": {
