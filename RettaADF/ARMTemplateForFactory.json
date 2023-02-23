@@ -1100,7 +1100,7 @@
 								"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
 							},
 							"body": {
-								"value": "@concat('{\"job_id\":350589294007009, \"table_name\":',pipeline().parameters.table_name,'}')",
+								"value": "{\"job_id\":350589294007009, \n\"table_name\":@pipeline().parameters.table_name}",
 								"type": "Expression"
 							}
 						}
