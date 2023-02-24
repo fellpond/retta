@@ -7,7 +7,7 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "RettaADF"
 		},
-		"Event_based_trigger_properties_typeProperties_scope": {
+		"Event_based_trigger_certificates_properties_typeProperties_scope": {
 			"type": "string",
 			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
 		}
@@ -215,7 +215,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Event_based_trigger')]",
+			"name": "[concat(parameters('factoryName'), '/Event_based_trigger_certificates')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -232,9 +232,9 @@
 				],
 				"type": "BlobEventsTrigger",
 				"typeProperties": {
-					"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/",
+					"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/Certificates",
 					"ignoreEmptyBlobs": true,
-					"scope": "[parameters('Event_based_trigger_properties_typeProperties_scope')]",
+					"scope": "[parameters('Event_based_trigger_certificates_properties_typeProperties_scope')]",
 					"events": [
 						"Microsoft.Storage.BlobCreated"
 					]
