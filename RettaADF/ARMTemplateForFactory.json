@@ -71,7 +71,47 @@
 			"type": "string",
 			"defaultValue": "https://app.metry.io/api/v2/"
 		},
+		"Event_based_trigger_building_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
 		"Event_based_trigger_certificates_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_contract_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_customer_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_hdd_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_hdd_ref_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_investment_proposal_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_meter_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_meter_relation_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_operations_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_site_properties_typeProperties_scope": {
 			"type": "string",
 			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
 		}
@@ -871,7 +911,8 @@
 								"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
 							},
 							"body": {
-								"job_id": 726405559678070
+								"value": "@concat('{\"job_id\": 726405559678070,\"notebook_params\": {\"table_name\":\"',pipeline().parameters.table_name,'\"}}')",
+								"type": "Expression"
 							}
 						}
 					},
@@ -999,6 +1040,9 @@
 					"Waitsec": {
 						"type": "int",
 						"defaultValue": 30
+					},
+					"table_name": {
+						"type": "string"
 					}
 				},
 				"variables": {
@@ -1067,7 +1111,12 @@
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
-							"parameters": {}
+							"parameters": {
+								"table_name": {
+									"value": "@variables('table_name')",
+									"type": "Expression"
+								}
+							}
 						}
 					},
 					{
@@ -1078,13 +1127,12 @@
 						"typeProperties": {
 							"variableName": "table_name",
 							"value": {
-								"value": "@split(pipeline().TriggerName,'_')[3]",
+								"value": "@join(skip(split(pipeline().TriggerName,'_'),3),'_')",
 								"type": "Expression"
 							}
 						}
 					}
 				],
-				"concurrency": 10,
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
@@ -3440,7 +3488,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Event_based_trigger_certificates')]",
+			"name": "[concat(parameters('factoryName'), '/Event_based_trigger_building')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -3457,9 +3505,311 @@
 				],
 				"type": "BlobEventsTrigger",
 				"typeProperties": {
+					"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/Build",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('Event_based_trigger_building_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Sharepoint_data_ingestion')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Event_based_trigger_certificates')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Sharepoint_data_ingestion",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
 					"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/Certificates",
 					"ignoreEmptyBlobs": true,
 					"scope": "[parameters('Event_based_trigger_certificates_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Sharepoint_data_ingestion')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Event_based_trigger_contract')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Sharepoint_data_ingestion",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/Contract",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('Event_based_trigger_contract_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Sharepoint_data_ingestion')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Event_based_trigger_customer')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Sharepoint_data_ingestion",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/Customer",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('Event_based_trigger_customer_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Sharepoint_data_ingestion')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Event_based_trigger_hdd')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Sharepoint_data_ingestion",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/",
+					"blobPathEndsWith": "hdd",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('Event_based_trigger_hdd_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Sharepoint_data_ingestion')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Event_based_trigger_hdd_ref')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Sharepoint_data_ingestion",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/hdd_ref",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('Event_based_trigger_hdd_ref_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Sharepoint_data_ingestion')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Event_based_trigger_investment_proposal')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Sharepoint_data_ingestion",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/Investment",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('Event_based_trigger_investment_proposal_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Sharepoint_data_ingestion')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Event_based_trigger_meter')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Sharepoint_data_ingestion",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/Meter",
+					"blobPathEndsWith": "Meter",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('Event_based_trigger_meter_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Sharepoint_data_ingestion')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Event_based_trigger_meter_relation')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Sharepoint_data_ingestion",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/Meter_Relation",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('Event_based_trigger_meter_relation_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Sharepoint_data_ingestion')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Event_based_trigger_operations')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Sharepoint_data_ingestion",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/operation",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('Event_based_trigger_operations_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Sharepoint_data_ingestion')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Event_based_trigger_site')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Sharepoint_data_ingestion",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/bronze/blobs/sharepoint/input/Site",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('Event_based_trigger_site_properties_typeProperties_scope')]",
 					"events": [
 						"Microsoft.Storage.BlobCreated"
 					]

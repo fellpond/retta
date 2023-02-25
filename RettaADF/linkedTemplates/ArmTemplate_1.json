@@ -83,7 +83,12 @@
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
-							"parameters": {}
+							"parameters": {
+								"table_name": {
+									"value": "@variables('table_name')",
+									"type": "Expression"
+								}
+							}
 						}
 					},
 					{
@@ -94,13 +99,12 @@
 						"typeProperties": {
 							"variableName": "table_name",
 							"value": {
-								"value": "@split(pipeline().TriggerName,'_')[3]",
+								"value": "@join(skip(split(pipeline().TriggerName,'_'),3),'_')",
 								"type": "Expression"
 							}
 						}
 					}
 				],
-				"concurrency": 10,
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}

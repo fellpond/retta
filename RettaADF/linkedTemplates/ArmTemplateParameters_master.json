@@ -53,7 +53,37 @@
 		"metryIntg_properties_typeProperties_url": {
 			"value": "https://app.metry.io/api/v2/"
 		},
+		"Event_based_trigger_building_properties_typeProperties_scope": {
+			"value": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
 		"Event_based_trigger_certificates_properties_typeProperties_scope": {
+			"value": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_contract_properties_typeProperties_scope": {
+			"value": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_customer_properties_typeProperties_scope": {
+			"value": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_hdd_properties_typeProperties_scope": {
+			"value": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_hdd_ref_properties_typeProperties_scope": {
+			"value": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_investment_proposal_properties_typeProperties_scope": {
+			"value": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_meter_properties_typeProperties_scope": {
+			"value": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_meter_relation_properties_typeProperties_scope": {
+			"value": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_operations_properties_typeProperties_scope": {
+			"value": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_site_properties_typeProperties_scope": {
 			"value": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
 		},
 		"containerUri": {

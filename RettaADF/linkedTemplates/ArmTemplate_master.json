@@ -71,7 +71,47 @@
 			"type": "string",
 			"defaultValue": "https://app.metry.io/api/v2/"
 		},
+		"Event_based_trigger_building_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
 		"Event_based_trigger_certificates_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_contract_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_customer_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_hdd_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_hdd_ref_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_investment_proposal_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_meter_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_meter_relation_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_operations_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
+		},
+		"Event_based_trigger_site_properties_typeProperties_scope": {
 			"type": "string",
 			"defaultValue": "/subscriptions/87963fbe-cd3c-480f-8013-6c3b4ca708c1/resourceGroups/RettaDW/providers/Microsoft.Storage/storageAccounts/rettadatalake"
 		},
@@ -188,13 +228,63 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
+					"Event_based_trigger_building_properties_typeProperties_scope": {
+						"value": "[parameters('Event_based_trigger_building_properties_typeProperties_scope')]"
+					},
 					"Event_based_trigger_certificates_properties_typeProperties_scope": {
 						"value": "[parameters('Event_based_trigger_certificates_properties_typeProperties_scope')]"
+					},
+					"Event_based_trigger_contract_properties_typeProperties_scope": {
+						"value": "[parameters('Event_based_trigger_contract_properties_typeProperties_scope')]"
+					},
+					"Event_based_trigger_customer_properties_typeProperties_scope": {
+						"value": "[parameters('Event_based_trigger_customer_properties_typeProperties_scope')]"
+					},
+					"Event_based_trigger_hdd_properties_typeProperties_scope": {
+						"value": "[parameters('Event_based_trigger_hdd_properties_typeProperties_scope')]"
+					},
+					"Event_based_trigger_hdd_ref_properties_typeProperties_scope": {
+						"value": "[parameters('Event_based_trigger_hdd_ref_properties_typeProperties_scope')]"
+					},
+					"Event_based_trigger_investment_proposal_properties_typeProperties_scope": {
+						"value": "[parameters('Event_based_trigger_investment_proposal_properties_typeProperties_scope')]"
+					},
+					"Event_based_trigger_meter_properties_typeProperties_scope": {
+						"value": "[parameters('Event_based_trigger_meter_properties_typeProperties_scope')]"
+					},
+					"Event_based_trigger_meter_relation_properties_typeProperties_scope": {
+						"value": "[parameters('Event_based_trigger_meter_relation_properties_typeProperties_scope')]"
+					},
+					"Event_based_trigger_operations_properties_typeProperties_scope": {
+						"value": "[parameters('Event_based_trigger_operations_properties_typeProperties_scope')]"
+					},
+					"Event_based_trigger_site_properties_typeProperties_scope": {
+						"value": "[parameters('Event_based_trigger_site_properties_typeProperties_scope')]"
 					}
 				}
 			},
 			"dependsOn": [
 				"[resourceId('Microsoft.Resources/deployments', 'RettaADF_ArmTemplate_1')]"
+			]
+		},
+		{
+			"name": "RettaADF_ArmTemplate_3",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_3.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'RettaADF_ArmTemplate_2')]"
 			]
 		}
 	]
