@@ -21,7 +21,7 @@
 						"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
 					},
 					"body": {
-						"value": "@concat('{\"job_id\": 726405559678070,\"notebook_params\": {\"table_name\":\"',variables('table_name'),'\"}}')",
+						"value": "@concat('{\"job_id\": 726405559678070,\"notebook_params\": {\"table_name\":\"',pipeline().parameters.table_name,'\"}}')",
 						"type": "Expression"
 					}
 				}
@@ -146,15 +146,15 @@
 			"Waitsec": {
 				"type": "int",
 				"defaultValue": 30
+			},
+			"table_name": {
+				"type": "string"
 			}
 		},
 		"variables": {
 			"JobStatus": {
 				"type": "String",
 				"defaultValue": "Running"
-			},
-			"table_name": {
-				"type": "String"
 			}
 		},
 		"folder": {

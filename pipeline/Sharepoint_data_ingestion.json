@@ -48,7 +48,13 @@
 						"referenceName": "Loading_datawarehouse",
 						"type": "PipelineReference"
 					},
-					"waitOnCompletion": true
+					"waitOnCompletion": true,
+					"parameters": {
+						"table_name": {
+							"value": "@variables('table_name')",
+							"type": "Expression"
+						}
+					}
 				}
 			},
 			{
