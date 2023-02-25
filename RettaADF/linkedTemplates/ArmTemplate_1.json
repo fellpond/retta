@@ -39,7 +39,14 @@
 					{
 						"name": "Sharepoint",
 						"type": "ExecutePipeline",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Set variable1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -50,7 +57,11 @@
 							"parameters": {
 								"JobID": "350589294007009",
 								"DatabricksWorkspaceID": "adb-1558361433928880",
-								"Waitsec": 30
+								"Waitsec": 30,
+								"table_name": {
+									"value": "@variables('table_name')",
+									"type": "Expression"
+								}
 							}
 						}
 					},
@@ -74,12 +85,30 @@
 							"waitOnCompletion": true,
 							"parameters": {}
 						}
+					},
+					{
+						"name": "Set variable1",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "table_name",
+							"value": {
+								"value": "@split(pipeline().TriggerName,'_')[-1]",
+								"type": "Expression"
+							}
+						}
 					}
 				],
-				"concurrency": 1,
+				"concurrency": 10,
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
+				},
+				"variables": {
+					"table_name": {
+						"type": "String"
+					}
 				},
 				"folder": {
 					"name": "Ingestion_pipeline"
