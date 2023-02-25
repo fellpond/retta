@@ -1078,7 +1078,7 @@
 						"typeProperties": {
 							"variableName": "table_name",
 							"value": {
-								"value": "@split(pipeline().TriggerName,'_')[-1]",
+								"value": "@split(pipeline().TriggerName,'_')[3]",
 								"type": "Expression"
 							}
 						}
