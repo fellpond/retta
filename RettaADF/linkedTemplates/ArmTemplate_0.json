@@ -319,9 +319,7 @@
 								"type": "Expression"
 							},
 							"method": "POST",
-							"headers": {
-								"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
-							},
+							"headers": {},
 							"body": {
 								"value": "{ \"lastUpdatedAfter\": \"@{adddays(utcnow(),int(pipeline().parameters.QueryRunDays))}\", \"lastUpdatedBefore\": \"@{utcnow()}\", \"filters\": [ { \"operand\": \"PipelineName\", \"operator\": \"Equals\", \"values\": [ \"@{pipeline().parameters.PipelineName}\" ] }, { \"operand\": \"Status\", \"operator\": \"In\", \"values\": [ \"InProgress\", \"Queued\" ] } ] }",
 								"type": "Expression"
