@@ -787,7 +787,14 @@
 					{
 						"name": "Web1",
 						"type": "WebActivity",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Set variable1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "0.12:00:00",
 							"retry": 0,
@@ -861,6 +868,48 @@
 								}
 							]
 						}
+					},
+					{
+						"name": "Web2",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://management.azure.com/subscriptions?api-version=2020-01-01",
+							"method": "GET",
+							"headers": {},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://management.core.windows.net/"
+							}
+						}
+					},
+					{
+						"name": "Set variable1",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Web2",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "subscription_id",
+							"value": {
+								"value": "@replace(activity('Web2').output.value[0].id,'/subscriptions/','')",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"policy": {
@@ -877,6 +926,11 @@
 					"QueryRunDays": {
 						"type": "string",
 						"defaultValue": "-1"
+					}
+				},
+				"variables": {
+					"subscription_id": {
+						"type": "String"
 					}
 				},
 				"folder": {
