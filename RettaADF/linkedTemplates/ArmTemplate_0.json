@@ -314,7 +314,10 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"url": "https://management.azure.com/subscriptions/@%7bactivity2F87963fbe-cd3c-480f-8013-6c3b4ca708c1.output.value%7d/resourceGroups/@%7bactivityRettaDW.output.value%7d/providers/Microsoft.DataFactory/factories/@%7bpipeline().DataFactory%7d/queryPipelineRuns?api-version=2018-06-01",
+							"url": {
+								"value": "https://management.azure.com/subscriptions/@{variables('subscription_id')}/resourceGroups/@{pipeline().parameters.resourcename}/providers/Microsoft.DataFactory/factories/@{pipeline().parameters.factory}/queryPipelineRuns?api-version=2018-06-01",
+								"type": "Expression"
+							},
 							"method": "POST",
 							"headers": {
 								"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
@@ -322,6 +325,10 @@
 							"body": {
 								"value": "{ \"lastUpdatedAfter\": \"@{adddays(utcnow(),int(pipeline().parameters.QueryRunDays))}\", \"lastUpdatedBefore\": \"@{utcnow()}\", \"filters\": [ { \"operand\": \"PipelineName\", \"operator\": \"Equals\", \"values\": [ \"@{pipeline().parameters.PipelineName}\" ] }, { \"operand\": \"Status\", \"operator\": \"In\", \"values\": [ \"InProgress\", \"Queued\" ] } ] }",
 								"type": "Expression"
+							},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://management.core.windows.net/"
 							}
 						}
 					},
@@ -436,6 +443,14 @@
 					"QueryRunDays": {
 						"type": "string",
 						"defaultValue": "-1"
+					},
+					"resourcename": {
+						"type": "string",
+						"defaultValue": "RettaDW"
+					},
+					"factory": {
+						"type": "string",
+						"defaultValue": "RettaADF"
 					}
 				},
 				"variables": {
