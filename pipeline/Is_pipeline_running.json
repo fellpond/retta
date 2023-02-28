@@ -23,12 +23,12 @@
 				"userProperties": [],
 				"typeProperties": {
 					"url": {
-						"value": "https://management.azure.com/subscriptions/@{variables('subscription_id')}/resourceGroups/@{pipeline().parameters.resourcename}/providers/Microsoft.DataFactory/factories/@{pipeline().parameters.factory}/queryPipelineRuns?api-version=2018-06-01",
+						"value": "https://management.azure.com/subscriptions/@{variables('subscription_id')}/resourceGroups/@{pipeline().parameters.resourcename}/providers/Microsoft.DataFactory/factories/@{pipeline().parameters.factory}/queryTriggerRuns?api-version=2018-06-01",
 						"type": "Expression"
 					},
 					"method": "POST",
 					"body": {
-						"value": "{ \"lastUpdatedAfter\": \"@{adddays(utcnow(),int(pipeline().parameters.QueryRunDays))}\", \"lastUpdatedBefore\": \"@{utcnow()}\", \"filters\": [ { \"operand\": \"PipelineName\", \"operator\": \"Equals\", \"values\": [ \"@{pipeline().parameters.PipelineName}\" ] }, { \"operand\": \"Status\", \"operator\": \"In\", \"values\": [ \"InProgress\", \"Queued\" ] } ] }",
+						"value": "{ \"lastUpdatedAfter\": \"@{adddays(utcnow(),int(pipeline().parameters.QueryRunDays))}\", \"lastUpdatedBefore\": \"@{utcnow()}\", \"filters\": [ { \"operand\": \"TriggerName\", \"operator\": \"Equals\", \"values\": [\"Event_based_trigger_certificates\"] } ] }",
 						"type": "Expression"
 					},
 					"authentication": {
