@@ -163,6 +163,9 @@
 		"variables": {
 			"subscription_id": {
 				"type": "String"
+			},
+			"running_pipeline_id": {
+				"type": "String"
 			}
 		},
 		"folder": {
