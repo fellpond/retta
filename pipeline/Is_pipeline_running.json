@@ -55,7 +55,7 @@
 						"type": "Expression"
 					},
 					"condition": {
-						"value": "@and(and(not(equals(item().runId,pipeline().parameters.ThisRunId)),or(equals(item().status,'InProgress'),equals(item().status,'Queued'))),equals(item().invokedBy.name,'Event_based_trigger_certificates'))",
+						"value": "@and(and(not(equals(item().runId,pipeline().parameters.ThisRunId)),or(equals(item().status,'InProgress'),equals(item().status,'Succeeded'))),equals(item().invokedBy.name,'Event_based_trigger_certificates'))",
 						"type": "Expression"
 					}
 				}
@@ -79,20 +79,17 @@
 					},
 					"ifTrueActivities": [
 						{
-							"name": "Fail1",
-							"type": "Fail",
-							"dependsOn": [],
-							"userProperties": [],
-							"typeProperties": {
-								"message": "Pipeline already running",
-								"errorCode": "Multiple_Trigger"
-							}
-						},
-						{
 							"name": "Set variable2",
 							"type": "SetVariable",
 							"dependsOn": [],
-							"userProperties": []
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "running_pipeline_id",
+								"value": {
+									"value": "@activity('Filter1').output.Value.runId",
+									"type": "Expression"
+								}
+							}
 						}
 					]
 				}
