@@ -90,6 +90,32 @@
 									"type": "Expression"
 								}
 							}
+						},
+						{
+							"name": "Web3",
+							"type": "WebActivity",
+							"dependsOn": [
+								{
+									"activity": "Set variable2",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"url": {
+									"value": "https://management.azure.com/subscriptions/@{variables('subscription_id')}/resourceGroups/@{pipeline().parameters.resourcename}/providers/Microsoft.DataFactory/factories/@{pipeline().parameters.factory}/pipelineruns/@{variables('running_pipeline_id')}/cancel?api-version=2018-06-01",
+									"type": "Expression"
+								}
+							}
 						}
 					]
 				}
@@ -162,7 +188,7 @@
 				"type": "String"
 			},
 			"running_pipeline_id": {
-				"type": "String"
+				"type": "Array"
 			}
 		},
 		"folder": {
