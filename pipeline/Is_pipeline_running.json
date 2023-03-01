@@ -193,7 +193,7 @@
 				"type": "String"
 			},
 			"running_pipeline_id": {
-				"type": "Array"
+				"type": "String"
 			}
 		},
 		"folder": {
