@@ -114,6 +114,11 @@
 								"url": {
 									"value": "https://management.azure.com/subscriptions/@{variables('subscription_id')}/resourceGroups/@{pipeline().parameters.resourcename}/providers/Microsoft.DataFactory/factories/@{pipeline().parameters.factory}/pipelineruns/@{variables('running_pipeline_id')}/cancel?api-version=2018-06-01",
 									"type": "Expression"
+								},
+								"method": "POST",
+								"authentication": {
+									"type": "MSI",
+									"resource": "https://management.core.windows.net/"
 								}
 							}
 						}
