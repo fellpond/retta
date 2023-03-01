@@ -143,7 +143,7 @@
 			},
 			"QueryRunDays": {
 				"type": "string",
-				"defaultValue": "-1"
+				"defaultValue": "-2"
 			},
 			"resourcename": {
 				"type": "string",
