@@ -87,6 +87,12 @@
 								"message": "Pipeline already running",
 								"errorCode": "Multiple_Trigger"
 							}
+						},
+						{
+							"name": "Set variable2",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"userProperties": []
 						}
 					]
 				}
