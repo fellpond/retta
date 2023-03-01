@@ -348,7 +348,7 @@
 								"type": "Expression"
 							},
 							"condition": {
-								"value": "@and(and(not(equals(item().runId,pipeline().parameters.ThisRunId)),or(equals(item().status,'InProgress'),equals(item().status,'Succeeded'))),equals(item().invokedBy.name,'Event_based_trigger_certificates'))",
+								"value": "@and(and(not(equals(item().runId,pipeline().parameters.ThisRunId)),or(equals(item().status,'InProgress'),equals(item().status,'Queued'))),equals(item().invokedBy.name,pipeline().TriggerName))",
 								"type": "Expression"
 							}
 						}
@@ -387,7 +387,14 @@
 								{
 									"name": "Web3",
 									"type": "WebActivity",
-									"dependsOn": [],
+									"dependsOn": [
+										{
+											"activity": "Set variable2",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
 									"policy": {
 										"timeout": "0.12:00:00",
 										"retry": 0,
@@ -397,7 +404,17 @@
 									},
 									"userProperties": [],
 									"typeProperties": {
-										"headers": {}
+										"url": {
+											"value": "https://management.azure.com/subscriptions/@{variables('subscription_id')}/resourceGroups/@{pipeline().parameters.resourcename}/providers/Microsoft.DataFactory/factories/@{pipeline().parameters.factory}/pipelineruns/@{variables('running_pipeline_id')}/cancel?api-version=2018-06-01",
+											"type": "Expression"
+										},
+										"method": "POST",
+										"headers": {},
+										"body": {},
+										"authentication": {
+											"type": "MSI",
+											"resource": "https://management.core.windows.net/"
+										}
 									}
 								}
 							]
