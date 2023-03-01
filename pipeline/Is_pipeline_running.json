@@ -23,12 +23,12 @@
 				"userProperties": [],
 				"typeProperties": {
 					"url": {
-						"value": "https://management.azure.com/subscriptions/@{variables('subscription_id')}/resourceGroups/@{pipeline().parameters.resourcename}/providers/Microsoft.DataFactory/factories/@{pipeline().parameters.factory}/pipelines/@{pipeline().parameters.PipelineName}?api-version=2018-06-01",
+						"value": "https://management.azure.com/subscriptions/@{variables('subscription_id')}/resourceGroups/@{pipeline().parameters.resourcename}/providers/Microsoft.DataFactory/factories/@{pipeline().parameters.factory}/queryPipelineRuns?api-version=2018-06-01",
 						"type": "Expression"
 					},
 					"method": "POST",
 					"body": {
-						"value": "{ \"lastUpdatedAfter\": \"@{addDays(utcNow(),int(pipeline().parameters.QueryRunDays))}\", \"lastUpdatedBefore\": \"@{utcNow()}\", \"filters\": [ { \"operand\": \"PipelineName\", \"operator\": \"Equals\", \"values\": [@{pipeline().parameters.PipelineName}] } ] }",
+						"value": "{ \"lastUpdatedAfter\": \"@{addDays(utcNow(),int(pipeline().parameters.QueryRunDays))}\", \"lastUpdatedBefore\": \"@{utcNow()}\", \"filters\": [ { \"operand\": \"PipelineName\", \"operator\": \"Equals\", \"values\": [\"@{pipeline().parameters.PipelineName}\"] } ] }",
 						"type": "Expression"
 					},
 					"authentication": {
