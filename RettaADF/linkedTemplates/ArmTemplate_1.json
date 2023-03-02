@@ -21,24 +21,14 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/integrationRuntimeLocal')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "SelfHosted",
-				"typeProperties": {}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Sharepoint_data_ingestion')]",
+			"name": "[concat(parameters('factoryName'), '/Is_pipeline_running')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "Sharepoint",
-						"type": "ExecutePipeline",
+						"name": "Web1",
+						"type": "WebActivity",
 						"dependsOn": [
 							{
 								"activity": "Set variable1",
@@ -47,30 +37,37 @@
 								]
 							}
 						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
 						"userProperties": [],
 						"typeProperties": {
-							"pipeline": {
-								"referenceName": "Sharepoint_ingestion",
-								"type": "PipelineReference"
+							"url": {
+								"value": "https://management.azure.com/subscriptions/@{variables('subscription_id')}/resourceGroups/@{pipeline().parameters.resourcename}/providers/Microsoft.DataFactory/factories/@{pipeline().parameters.factory}/queryPipelineRuns?api-version=2018-06-01",
+								"type": "Expression"
 							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"JobID": "350589294007009",
-								"DatabricksWorkspaceID": "adb-1558361433928880",
-								"Waitsec": 30,
-								"table_name": {
-									"value": "@variables('table_name')",
-									"type": "Expression"
-								}
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"value": "{ \"lastUpdatedAfter\": \"@{addDays(utcNow(),int(pipeline().parameters.QueryRunDays))}\", \"lastUpdatedBefore\": \"@{utcNow()}\", \"filters\": [ { \"operand\": \"PipelineName\", \"operator\": \"Equals\", \"values\": [\"@{pipeline().parameters.PipelineName}\"] } ] }",
+								"type": "Expression"
+							},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://management.core.windows.net/"
 							}
 						}
 					},
 					{
-						"name": "Datawarehouse Loading",
-						"type": "ExecutePipeline",
+						"name": "Filter1",
+						"type": "Filter",
 						"dependsOn": [
 							{
-								"activity": "Sharepoint",
+								"activity": "Web1",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -78,28 +75,142 @@
 						],
 						"userProperties": [],
 						"typeProperties": {
-							"pipeline": {
-								"referenceName": "Loading_datawarehouse",
-								"type": "PipelineReference"
+							"items": {
+								"value": "@activity('Web1').output.value",
+								"type": "Expression"
 							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"table_name": {
-									"value": "@variables('table_name')",
-									"type": "Expression"
+							"condition": {
+								"value": "@and(and(not(equals(item().runId,pipeline().parameters.ThisRunId)),or(equals(item().status,'InProgress'),equals(item().status,'Queued'))),equals(item().invokedBy.name,pipeline().TriggerName))",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "If Condition1",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Filter1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@greaterOrEquals(int(activity('Filter1').output.FilteredItemsCount),1)",
+								"type": "Expression"
+							},
+							"ifTrueActivities": [
+								{
+									"name": "Set variable2",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "running_pipeline_id",
+										"value": {
+											"value": "@activity('Filter1').output.Value.runId",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Web3",
+									"type": "WebActivity",
+									"dependsOn": [
+										{
+											"activity": "Set variable2",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"url": {
+											"value": "https://management.azure.com/subscriptions/@{variables('subscription_id')}/resourceGroups/@{pipeline().parameters.resourcename}/providers/Microsoft.DataFactory/factories/@{pipeline().parameters.factory}/pipelineruns/@{variables('running_pipeline_id')}/cancel?api-version=2018-06-01",
+											"type": "Expression"
+										},
+										"method": "POST",
+										"headers": {},
+										"body": {},
+										"authentication": {
+											"type": "MSI",
+											"resource": "https://management.core.windows.net/"
+										}
+									}
+								},
+								{
+									"name": "Execute Pipeline1",
+									"type": "ExecutePipeline",
+									"dependsOn": [
+										{
+											"activity": "Web3",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "Email_Notifier",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {}
+									}
 								}
+							]
+						}
+					},
+					{
+						"name": "Web2",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://management.azure.com/subscriptions?api-version=2020-01-01",
+							"method": "GET",
+							"headers": {},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://management.core.windows.net/"
 							}
 						}
 					},
 					{
 						"name": "Set variable1",
 						"type": "SetVariable",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Web2",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"userProperties": [],
 						"typeProperties": {
-							"variableName": "table_name",
+							"variableName": "subscription_id",
 							"value": {
-								"value": "@join(skip(split(pipeline().TriggerName,'_'),3),'_')",
+								"value": "@replace(activity('Web2').output.value[0].id,'/subscriptions/','')",
 								"type": "Expression"
 							}
 						}
@@ -109,13 +220,37 @@
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
 				},
+				"parameters": {
+					"PipelineName": {
+						"type": "string",
+						"defaultValue": "Sharepoint_data_ingestion"
+					},
+					"ThisRunId": {
+						"type": "string"
+					},
+					"QueryRunDays": {
+						"type": "string",
+						"defaultValue": "-1"
+					},
+					"resourcename": {
+						"type": "string",
+						"defaultValue": "RettaDW"
+					},
+					"factory": {
+						"type": "string",
+						"defaultValue": "RettaADF"
+					}
+				},
 				"variables": {
-					"table_name": {
+					"subscription_id": {
+						"type": "String"
+					},
+					"running_pipeline_id": {
 						"type": "String"
 					}
 				},
 				"folder": {
-					"name": "Ingestion_pipeline"
+					"name": "Misc"
 				},
 				"annotations": []
 			},
@@ -916,6 +1051,120 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/DS_FinGridAPI')]",
 				"[concat(variables('factoryId'), '/datasets/TempTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Sharepoint_data_ingestion')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Sharepoint",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Set variable1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Sharepoint_ingestion",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"JobID": "350589294007009",
+								"DatabricksWorkspaceID": "adb-1558361433928880",
+								"Waitsec": 30,
+								"table_name": {
+									"value": "@variables('table_name')",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Datawarehouse Loading",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Sharepoint",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Loading_datawarehouse",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"table_name": {
+									"value": "@variables('table_name')",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Set variable1",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Execute Pipeline1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "table_name",
+							"value": {
+								"value": "@join(skip(split(pipeline().TriggerName,'_'),3),'_')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Execute Pipeline1",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Is_pipeline_running",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"table_name": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Ingestion_pipeline"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Is_pipeline_running')]"
 			]
 		}
 	]
