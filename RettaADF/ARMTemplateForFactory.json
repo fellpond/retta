@@ -455,7 +455,7 @@
 							"method": "POST",
 							"headers": {},
 							"body": {
-								"value": "{\n\t\"EmailTo\": \"@{pipeline().parameters.EmailTo}\",\n\t\"Subject\": \"An error has occured in the @{pipeline().Pipeline}-pipeline\",\n\t\"DataFactoryName\": \"@{pipeline().DataFactory}\",\n\t\"PipelineName\": \"@{pipeline().Pipeline}\",\n\t\"Activity\": \"@{pipeline().parameters.Activity}\",\n\t\"ErrorMessage\": \"@{pipeline().parameters.ErrorMessage}\"\n}",
+								"value": "{\n\t\"EmailTo\": \"@{pipeline().parameters.EmailTo}\",\n\t\"Subject\": \"Pipeline-@{pipeline().Pipeline} has been cancelled due to updated trigger-@{pipeline().TriggerName}\",\n\t\"DataFactoryName\": \"@{pipeline().DataFactory}\",\n\t\"PipelineName\": \"@{pipeline().Pipeline}\",\n\t\"Activity\": \"@{pipeline().parameters.Activity}\",\n\t\"ErrorMessage\": \"@{pipeline().parameters.ErrorMessage}\"\n}",
 								"type": "Expression"
 							}
 						}
@@ -467,7 +467,8 @@
 				},
 				"parameters": {
 					"EmailTo": {
-						"type": "string"
+						"type": "string",
+						"defaultValue": "swathi.reddy@routadigital.com"
 					},
 					"Activity": {
 						"type": "string"
