@@ -33,7 +33,8 @@
 				"type": "string"
 			},
 			"ErrorMessage": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "Pipeline Failed"
 			}
 		},
 		"folder": {
