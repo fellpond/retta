@@ -3,24 +3,38 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "email_notification",
-				"type": "WebActivity",
+				"name": "ForEach1",
+				"type": "ForEach",
 				"dependsOn": [],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
 				"userProperties": [],
 				"typeProperties": {
-					"url": "https://prod-27.northeurope.logic.azure.com:443/workflows/1595b262bc93402aa1d613288978880a/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=20I-mJPWXX1unFqWDmhgTLBURQYVlPtJc147nM3y7Ek",
-					"method": "POST",
-					"body": {
-						"value": "{\n\t\"EmailTo\": \"@{pipeline().parameters.EmailTo}\",\n\t\"Subject\": \"Pipeline-@{pipeline().Pipeline} has been cancelled due to updated trigger-@{pipeline().TriggerName}\",\n\t\"DataFactoryName\": \"@{pipeline().DataFactory}\",\n\t\"PipelineName\": \"@{pipeline().Pipeline}\",\n\t\"Activity\": \"@{pipeline().parameters.Activity}\",\n\t\"ErrorMessage\": \"@{pipeline().parameters.ErrorMessage}\"\n}",
+					"items": {
+						"value": "@variables('EmailTo')",
 						"type": "Expression"
-					}
+					},
+					"activities": [
+						{
+							"name": "email_notification",
+							"type": "WebActivity",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"url": "https://prod-27.northeurope.logic.azure.com:443/workflows/1595b262bc93402aa1d613288978880a/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=20I-mJPWXX1unFqWDmhgTLBURQYVlPtJc147nM3y7Ek",
+								"method": "POST",
+								"body": {
+									"value": "{\n\t\"EmailTo\": \"@{item()}\",\n\t\"Subject\": \"Pipeline-@{pipeline().Pipeline} has been cancelled due to updated trigger-@{pipeline().TriggerName}\",\n\t\"DataFactoryName\": \"@{pipeline().DataFactory}\",\n\t\"PipelineName\": \"@{pipeline().Pipeline}\",\n\t\"Activity\": \"@{pipeline().parameters.Activity}\",\n\t\"ErrorMessage\": \"@{pipeline().parameters.ErrorMessage}\"\n}",
+									"type": "Expression"
+								}
+							}
+						}
+					]
 				}
 			}
 		],
@@ -35,6 +49,15 @@
 			"ErrorMessage": {
 				"type": "string",
 				"defaultValue": "Pipeline Failed"
+			}
+		},
+		"variables": {
+			"EmailTo": {
+				"type": "Array",
+				"defaultValue": [
+					"swathi.reddy@routadigital.com",
+					"swathi.reddy.shetty@gmail.com"
+				]
 			}
 		},
 		"folder": {
