@@ -139,7 +139,13 @@
 									"referenceName": "Email_Notifier",
 									"type": "PipelineReference"
 								},
-								"waitOnCompletion": true
+								"waitOnCompletion": true,
+								"parameters": {
+									"ErrorMessage": {
+										"value": "@concat(variables('running_pipeline_id'),'has been cancelled because of of the new changes in the sharepoint. A new trigger has been activated')",
+										"type": "Expression"
+									}
+								}
 							}
 						}
 					]
