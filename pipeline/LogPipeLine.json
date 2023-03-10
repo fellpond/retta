@@ -22,15 +22,15 @@
 					"scripts": [
 						{
 							"type": "Query",
-							"text": "\ntruncate table Logtable\n\ninsert into Logtable (TableName,MaxDateForTable,SourceColumnUsedForLogging,IsIssue)\nselect   '[dbo].[energy_coeff_Monthly]' as TableName, Concat(Cast(MAX(yrmnth) as Varchar(50)),'01')MaxDateForTable,'yrmnth' SourceColumnForLogging,Case when Cast(MAX(yrmnth) as INT)= cast(format(dateadd(month,-1,GETDATE()),'yyyyMM') as int) then 1 else 0 End as IsIssue  from [dbo].[energy_coeff_Monthly]\nUNION\nselect  '[dbo].[CO2_emission]' as TableName, Concat(Cast(MAX(yrmnth) as Varchar(50)),'01') MaxDateForTable,'yrmnth' SourceColumnForLogging,\nCase when Cast(MAX(yrmnth) as int)= cast(format(dateadd(month,-1,GETDATE()),'yyyyMM') as int)  then 1 else 0 End as IsIssue from [dbo].[CO2_emission]\nUNION\nselect \n'[dbo].[energy_daily]' as TableName, Cast(Cast(format(MAX(dly_end_dt),'yyyyMMdd') as INt) as Varchar(50)) MaxDateForTable,'dly_end_dt' SourceColumnForLogging,Case when Cast(format(MAX(dly_end_dt),'yyyyMM') as INt)= cast(format(GETDATE(),'yyyyMM') as int) then 1 else 0 End as IsIssue from [dbo].[energy_daily]\nUNION\nselect \n'[dbo].[energy_monthly]' as TableName, Cast(Cast(format(MAX(mnthly_end_dt),'yyyyMMdd') as INt) as Varchar(50)) MaxDateForTable,'mnthly_end_dt' SourceColumnForLogging,Case when Cast(format(MAX(mnthly_end_dt),'yyyyMM') as INt)= cast(format(GETDATE(),'yyyyMM') as int) then 1 else 0 End as IsIssue from [dbo].[energy_monthly]\nUNION\nselect \n'[dbo].[energy_yearly]' as TableName, Cast(Cast(format(MAX(mnthly_end_dt),'yyyyMMdd') as INt) as Varchar(50)) MaxDateForTable,'mnthly_end_dt' SourceColumnForLogging,Case when Cast(format(MAX(mnthly_end_dt),'yyyyMM') as INt)= cast(format(GETDATE(),'yyyyMM') as int) then 1 else 0 End as IsIssue from [dbo].[energy_yearly]\nUNION\nselect \n'[dbo].[energy_monthly_building]' as TableName, Cast(Cast(format(MAX(mnthly_end_dt),'yyyyMMdd') as INt) as Varchar(50)) MaxDateForTable,'mnthly_end_dt' SourceColumnForLogging,Case when Cast(format(MAX(mnthly_end_dt),'yyyyMM') as INt)= cast(format(GETDATE(),'yyyyMM') as int) then 1 else 0 End as IsIssue from [dbo].[energy_monthly_building]\n\n\n\nselect * from Logtable where isissue=0\n"
+							"text": "\ntruncate table Logtable\n\ninsert into Logtable (TableName,MaxDateForTable,SourceColumnUsedForLogging,IsIssue)\nselect   '[dbo].[energy_coeff_Monthly]' as TableName, Concat(Cast(MAX(yrmnth) as Varchar(50)),'01')MaxDateForTable,'yrmnth' SourceColumnForLogging,Case when Cast(MAX(yrmnth) as INT)= cast(format(dateadd(month,2,GETDATE()),'yyyyMM') as int) then 1 else 0 End as IsIssue  from [dbo].[energy_coeff_Monthly]\nUNION\nselect  '[dbo].[CO2_emission]' as TableName, Concat(Cast(MAX(yrmnth) as Varchar(50)),'01') MaxDateForTable,'yrmnth' SourceColumnForLogging,\nCase when Cast(MAX(yrmnth) as int)= cast(format(dateadd(month,2,GETDATE()),'yyyyMM') as int)  then 1 else 0 End as IsIssue from [dbo].[CO2_emission]\nUNION\nselect \n'[dbo].[energy_daily]' as TableName, Cast(Cast(format(MAX(dly_end_dt),'yyyyMMdd') as INt) as Varchar(50)) MaxDateForTable,'dly_end_dt' SourceColumnForLogging,Case when Cast(format(MAX(dly_end_dt),'yyyyMM') as INt)= cast(format(GETDATE(),'yyyyMM') as int) then 1 else 0 End as IsIssue from [dbo].[energy_daily]\nUNION\nselect \n'[dbo].[energy_monthly]' as TableName, Cast(Cast(format(MAX(mnthly_end_dt),'yyyyMMdd') as INt) as Varchar(50)) MaxDateForTable,'mnthly_end_dt' SourceColumnForLogging,Case when Cast(format(MAX(mnthly_end_dt),'yyyyMM') as INt)= cast(format(GETDATE(),'yyyyMM') as int) then 1 else 0 End as IsIssue from [dbo].[energy_monthly]\nUNION\nselect \n'[dbo].[energy_yearly]' as TableName, Cast(Cast(format(MAX(mnthly_end_dt),'yyyyMMdd') as INt) as Varchar(50)) MaxDateForTable,'mnthly_end_dt' SourceColumnForLogging,Case when Cast(format(MAX(mnthly_end_dt),'yyyyMM') as INt)= cast(format(GETDATE(),'yyyyMM') as int) then 1 else 0 End as IsIssue from [dbo].[energy_yearly]\nUNION\nselect \n'[dbo].[energy_monthly_building]' as TableName, Cast(Cast(format(MAX(mnthly_end_dt),'yyyyMMdd') as INt) as Varchar(50)) MaxDateForTable,'mnthly_end_dt' SourceColumnForLogging,Case when Cast(format(MAX(mnthly_end_dt),'yyyyMM') as INt)= cast(format(GETDATE(),'yyyyMM') as int) then 1 else 0 End as IsIssue from [dbo].[energy_monthly_building]\n\n\n\nselect * from Logtable where isissue=0\n"
 						}
 					],
 					"scriptBlockExecutionTimeout": "02:00:00"
 				}
 			},
 			{
-				"name": "ForEach1",
-				"type": "ForEach",
+				"name": "Set variable1",
+				"type": "SetVariable",
 				"dependsOn": [
 					{
 						"activity": "InsertDatainLogTable",
@@ -41,13 +41,33 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
-					"items": {
+					"variableName": "tables",
+					"value": {
 						"value": "@activity('InsertDatainLogTable').output.resultSets[0].rows",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Set variable1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@variables('tables')",
 						"type": "Expression"
 					},
 					"activities": [
 						{
-							"name": "Execute Pipeline1",
+							"name": "Execute Pipeline1_copy1_copy1",
 							"type": "ExecutePipeline",
 							"dependsOn": [],
 							"userProperties": [],
@@ -59,7 +79,7 @@
 								"waitOnCompletion": true,
 								"parameters": {
 									"ErrorMessage": {
-										"value": "@concat('Table ',item(),'is not updated this month. Please check data')",
+										"value": "@concat('Some data is missing from tables. Please check error result',item().TableName)",
 										"type": "Expression"
 									}
 								}
@@ -69,6 +89,11 @@
 				}
 			}
 		],
+		"variables": {
+			"tables": {
+				"type": "Array"
+			}
+		},
 		"annotations": []
 	}
 }
