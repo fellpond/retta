@@ -107,7 +107,7 @@
 							"type": "Expression"
 						},
 						"ErrorMessage": {
-							"value": "@concat('Some data is missing from tables. Please check error result',variables('TableNames'))",
+							"value": "@concat('<B>','It appears that some data for the current month is missing from the specified tables. Can you please review the data in these tables to confirm if this is the case? ',variables('TableNames'))",
 							"type": "Expression"
 						}
 					}
