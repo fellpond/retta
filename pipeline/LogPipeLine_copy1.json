@@ -84,7 +84,7 @@
 				}
 			},
 			{
-				"name": "Email_Notifier",
+				"name": "Email Notifier ",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
