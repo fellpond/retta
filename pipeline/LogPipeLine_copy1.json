@@ -1,0 +1,129 @@
+{
+	"name": "LogPipeLine_copy1",
+	"properties": {
+		"activities": [
+			{
+				"name": "InsertDatainLogTable",
+				"type": "Script",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "RettaDW",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "\ntruncate table Logtable\n\ninsert into Logtable (TableName,MaxDateForTable,SourceColumnUsedForLogging,IsIssue)\nselect   '[dbo].[energy_coeff_Monthly]' as TableName, Concat(Cast(MAX(yrmnth) as Varchar(50)),'01')MaxDateForTable,'yrmnth' SourceColumnForLogging,Case when Cast(MAX(yrmnth) as INT)= cast(format(dateadd(month,2,GETDATE()),'yyyyMM') as int) then 1 else 0 End as IsIssue  from [dbo].[energy_coeff_Monthly]\nUNION\nselect  '[dbo].[CO2_emission]' as TableName, Concat(Cast(MAX(yrmnth) as Varchar(50)),'01') MaxDateForTable,'yrmnth' SourceColumnForLogging,\nCase when Cast(MAX(yrmnth) as int)= cast(format(dateadd(month,2,GETDATE()),'yyyyMM') as int)  then 1 else 0 End as IsIssue from [dbo].[CO2_emission]\nUNION\nselect \n'[dbo].[energy_daily]' as TableName, Cast(Cast(format(MAX(dly_end_dt),'yyyyMMdd') as INt) as Varchar(50)) MaxDateForTable,'dly_end_dt' SourceColumnForLogging,Case when Cast(format(MAX(dly_end_dt),'yyyyMM') as INt)= cast(format(GETDATE(),'yyyyMM') as int) then 1 else 0 End as IsIssue from [dbo].[energy_daily]\nUNION\nselect \n'[dbo].[energy_monthly]' as TableName, Cast(Cast(format(MAX(mnthly_end_dt),'yyyyMMdd') as INt) as Varchar(50)) MaxDateForTable,'mnthly_end_dt' SourceColumnForLogging,Case when Cast(format(MAX(mnthly_end_dt),'yyyyMM') as INt)= cast(format(GETDATE(),'yyyyMM') as int) then 1 else 0 End as IsIssue from [dbo].[energy_monthly]\nUNION\nselect \n'[dbo].[energy_yearly]' as TableName, Cast(Cast(format(MAX(mnthly_end_dt),'yyyyMMdd') as INt) as Varchar(50)) MaxDateForTable,'mnthly_end_dt' SourceColumnForLogging,Case when Cast(format(MAX(mnthly_end_dt),'yyyyMM') as INt)= cast(format(GETDATE(),'yyyyMM') as int) then 1 else 0 End as IsIssue from [dbo].[energy_yearly]\nUNION\nselect \n'[dbo].[energy_monthly_building]' as TableName, Cast(Cast(format(MAX(mnthly_end_dt),'yyyyMMdd') as INt) as Varchar(50)) MaxDateForTable,'mnthly_end_dt' SourceColumnForLogging,Case when Cast(format(MAX(mnthly_end_dt),'yyyyMM') as INt)= cast(format(GETDATE(),'yyyyMM') as int) then 1 else 0 End as IsIssue from [dbo].[energy_monthly_building]\n\n\n\nselect * from Logtable where isissue=0\n"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "InsertDatainLogTable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('InsertDatainLogTable').output.resultSets[0].rows",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Set DummyTables",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "DummyTables",
+								"value": {
+									"value": "@concat(item().TableName,',',variables('TableNames'))",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Set TableNames",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Set DummyTables",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "TableNames",
+								"value": {
+									"value": "@variables('DummyTables')",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "email_notification",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-27.northeurope.logic.azure.com:443/workflows/1595b262bc93402aa1d613288978880a/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=20I-mJPWXX1unFqWDmhgTLBURQYVlPtJc147nM3y7Ek",
+					"method": "POST",
+					"body": {
+						"value": "{\n\t\"EmailTo\": \"@{variables('SendEmailsto')}\",\n\t\"Subject\": \"Pipeline-@{pipeline().Pipeline} has been cancelled due to updated trigger-@{pipeline().TriggerName}\",\n\t\"DataFactoryName\": \"@{pipeline().DataFactory}\",\n\t\"PipelineName\": \"@{pipeline().Pipeline}\"\n}",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"TableNames": {
+				"type": "String"
+			},
+			"SendEmailsto": {
+				"type": "String",
+				"defaultValue": "mayank.vishnoi@routadigital.com;swathi.reddy@routadigital.com"
+			},
+			"DummyTables": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
