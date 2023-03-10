@@ -84,8 +84,8 @@
 				}
 			},
 			{
-				"name": "email_notification",
-				"type": "WebActivity",
+				"name": "Email_Notifier",
+				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
 						"activity": "ForEach1",
@@ -94,20 +94,22 @@
 						]
 					}
 				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
 				"userProperties": [],
 				"typeProperties": {
-					"url": "https://prod-27.northeurope.logic.azure.com:443/workflows/1595b262bc93402aa1d613288978880a/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=20I-mJPWXX1unFqWDmhgTLBURQYVlPtJc147nM3y7Ek",
-					"method": "POST",
-					"body": {
-						"value": "{\n\t\"EmailTo\": \"@{variables('SendEmailsto')}\",\n\t\"Subject\": \"Pipeline-@{pipeline().Pipeline} has been cancelled due to updated trigger-@{pipeline().TriggerName}\",\n\t\"DataFactoryName\": \"@{pipeline().DataFactory}\",\n\t\"PipelineName\": \"@{pipeline().Pipeline}\"\n}",
-						"type": "Expression"
+					"pipeline": {
+						"referenceName": "Email_Notifier",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"EmailTo": {
+							"value": "@variables('SendEmailsto')",
+							"type": "Expression"
+						},
+						"ErrorMessage": {
+							"value": "@concat('Some data is missing from tables. Please check error result',variables('TableNames'))",
+							"type": "Expression"
+						}
 					}
 				}
 			}
