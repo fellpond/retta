@@ -22,26 +22,6 @@
 						"resource": "https://management.core.windows.net/"
 					}
 				}
-			},
-			{
-				"name": "Set variable1",
-				"type": "SetVariable",
-				"dependsOn": [
-					{
-						"activity": "Web2",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "subscription_id",
-					"value": {
-						"value": "@replace(activity('Web2').output.value[0].id,'/subscriptions/','')",
-						"type": "Expression"
-					}
-				}
 			}
 		],
 		"parameters": {
