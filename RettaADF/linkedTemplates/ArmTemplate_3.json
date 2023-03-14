@@ -69,20 +69,6 @@
 						}
 					},
 					{
-						"name": "Energy hourly",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "energy_hrly_ld",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
 						"name": "Energy_daily",
 						"type": "ExecutePipeline",
 						"dependsOn": [],
@@ -127,12 +113,6 @@
 						"name": "CO2_pipeline",
 						"type": "ExecutePipeline",
 						"dependsOn": [
-							{
-								"activity": "Energy hourly",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
 							{
 								"activity": "Energy_daily",
 								"dependencyConditions": [
