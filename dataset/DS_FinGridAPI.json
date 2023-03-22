@@ -1,0 +1,23 @@
+{
+	"name": "DS_FinGridAPI",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_FinGridApi",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"relativeurl": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@dataset().relativeurl",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	}
+}

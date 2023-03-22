@@ -1,0 +1,22 @@
+{
+	"name": "Databricks_job_api",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous",
+			"authHeaders": {
+				"Bearer": {
+					"type": "AzureKeyVaultSecret",
+					"store": {
+						"referenceName": "AzureKeyVaultRetta",
+						"type": "LinkedServiceReference"
+					},
+					"secretName": "DatabricksToken"
+				}
+			}
+		}
+	}
+}

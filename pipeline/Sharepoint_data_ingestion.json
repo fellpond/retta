@@ -1,0 +1,104 @@
+{
+	"name": "Sharepoint_data_ingestion",
+	"properties": {
+		"activities": [
+			{
+				"name": "Sharepoint",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Set variable1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Sharepoint_ingestion",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"JobID": "350589294007009",
+						"DatabricksWorkspaceID": "adb-1558361433928880",
+						"Waitsec": 30,
+						"table_name": {
+							"value": "@variables('table_name')",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Datawarehouse Loading",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Sharepoint",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Loading_datawarehouse",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"table_name": {
+							"value": "@variables('table_name')",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Execute Pipeline1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "table_name",
+					"value": {
+						"value": "@join(skip(split(pipeline().TriggerName,'_'),3),'_')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Execute Pipeline1",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Is_pipeline_running",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"variables": {
+			"table_name": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Ingestion_pipeline"
+		},
+		"annotations": []
+	}
+}

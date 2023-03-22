@@ -1,0 +1,122 @@
+{
+	"name": "LogPipeLine",
+	"properties": {
+		"activities": [
+			{
+				"name": "InsertDatainLogTable",
+				"type": "Script",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "RettaDW",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "\nselect * from (\nselect   '[dbo].[energy_coeff_Monthly]' as TableName, Concat(Cast(MAX(yrmnth) as Varchar(50)),'01')MaxDateForTable,'yrmnth' SourceColumnForLogging,Case when Cast(MAX(yrmnth) as INT)= cast(format(dateadd(month,2,GETDATE()),'yyyyMM') as int) then 1 else 0 End as IsIssue  from [dbo].[energy_coeff_Monthly]\nUNION\nselect  '[dbo].[CO2_emission]' as TableName, Concat(Cast(MAX(yrmnth) as Varchar(50)),'01') MaxDateForTable,'yrmnth' SourceColumnForLogging,\nCase when Cast(MAX(yrmnth) as int)= cast(format(dateadd(month,2,GETDATE()),'yyyyMM') as int)  then 1 else 0 End as IsIssue from [dbo].[CO2_emission]\nUNION\nselect \n'[dbo].[energy_daily]' as TableName, Cast(Cast(format(MAX(dly_end_dt),'yyyyMMdd') as INt) as Varchar(50)) MaxDateForTable,'dly_end_dt' SourceColumnForLogging,Case when Cast(format(MAX(dly_end_dt),'yyyyMM') as INt)= cast(format(GETDATE(),'yyyyMM') as int) then 1 else 0 End as IsIssue from [dbo].[energy_daily]\nUNION\nselect \n'[dbo].[energy_monthly]' as TableName, Cast(Cast(format(MAX(mnthly_end_dt),'yyyyMMdd') as INt) as Varchar(50)) MaxDateForTable,'mnthly_end_dt' SourceColumnForLogging,Case when Cast(format(MAX(mnthly_end_dt),'yyyyMM') as INt)= cast(format(GETDATE(),'yyyyMM') as int) then 1 else 0 End as IsIssue from [dbo].[energy_monthly]\nUNION\nselect \n'[dbo].[energy_yearly]' as TableName, Cast(Cast(format(MAX(mnthly_end_dt),'yyyyMMdd') as INt) as Varchar(50)) MaxDateForTable,'mnthly_end_dt' SourceColumnForLogging,Case when Cast(format(MAX(mnthly_end_dt),'yyyyMM') as INt)= cast(format(GETDATE(),'yyyyMM') as int) then 1 else 0 End as IsIssue from [dbo].[energy_yearly]\nUNION\nselect \n'[dbo].[energy_monthly_building]' as TableName, Cast(Cast(format(MAX(mnthly_end_dt),'yyyyMMdd') as INt) as Varchar(50)) MaxDateForTable,'mnthly_end_dt' SourceColumnForLogging,Case when Cast(format(MAX(mnthly_end_dt),'yyyyMM') as INt)= cast(format(GETDATE(),'yyyyMM') as int) then 1 else 0 End as IsIssue from [dbo].[energy_monthly_building]\n\n) Logtable where isissue=0\n"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			},
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "InsertDatainLogTable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "tables",
+					"value": {
+						"value": "@activity('InsertDatainLogTable').output.resultSets[0].rows",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Set variable1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@variables('tables')",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Append variable1",
+							"type": "AppendVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "tablename",
+								"value": {
+									"value": "@item().TableName",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Execute Pipeline1_copy1_copy1",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Email_Notifier",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ErrorMessage": {
+							"value": "@concat('Some data is missing from tables. Please check error result',string(variables('tablename')))",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"variables": {
+			"tables": {
+				"type": "Array"
+			},
+			"tablename": {
+				"type": "Array"
+			}
+		},
+		"annotations": []
+	}
+}

@@ -1,0 +1,238 @@
+{
+	"name": "energy_dly_mnthly_ld",
+	"properties": {
+		"activities": [
+			{
+				"name": "Extract daily and monthly data",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "metryDS",
+						"type": "DatasetReference",
+						"parameters": {
+							"endpoint": {
+								"value": "@concat('meters?','box=',pipeline().parameters.box,'&','limit=',pipeline().parameters.limit)",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "energy_dly_mnthly",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "parse and transform",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Extract daily and monthly data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
+					"method": "POST",
+					"headers": {
+						"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
+					},
+					"body": {
+						"job_id": 953228974256009
+					}
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Until1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@not(equals(activity('Check API').output.state.result_state,'SUCCESS'))",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Fail1",
+							"type": "Fail",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"message": "{ Energy Daily and hourly Workflow failed }",
+								"errorCode": "Failed"
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Until1",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "parse and transform",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@not(equals(variables('JobStatus'),'Running'))",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Check API",
+							"type": "WebActivity",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"url": {
+									"value": "@concat('https://adb-1558361433928880.0.azuredatabricks.net/api/2.1/jobs/runs/get?run_id=',activity('parse and transform').output.run_id)",
+									"type": "Expression"
+								},
+								"method": "GET",
+								"headers": {
+									"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
+								}
+							}
+						},
+						{
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Check API",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "JobStatus",
+								"value": {
+									"value": "@if(\nor(\nequals(activity('Check API').output.state.life_cycle_state, 'PENDING'), equals(activity('Check API').output.state.life_cycle_state, 'RUNNING')\n),\n'Running',\nif(equals(activity('Check API').output.state.life_cycle_state,'FAILED'),'Failed',activity('Check API').output.state.result_state)\n)\n",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Wait to recheck API",
+							"type": "Wait",
+							"dependsOn": [
+								{
+									"activity": "Set variable1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": {
+									"value": "@pipeline().parameters.Waitsec",
+									"type": "Expression"
+								}
+							}
+						}
+					],
+					"timeout": "7.00:00:00"
+				}
+			}
+		],
+		"parameters": {
+			"email": {
+				"type": "string",
+				"defaultValue": "prayank.sharma@routadigital.com"
+			},
+			"Waitsec": {
+				"type": "int",
+				"defaultValue": 30
+			},
+			"box": {
+				"type": "string",
+				"defaultValue": "active"
+			},
+			"limit": {
+				"type": "string",
+				"defaultValue": "10000"
+			}
+		},
+		"variables": {
+			"test": {
+				"type": "String",
+				"defaultValue": "1"
+			},
+			"JobStatus": {
+				"type": "String",
+				"defaultValue": "Running"
+			}
+		},
+		"folder": {
+			"name": "energy_pipelines"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-08-08T01:57:13Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

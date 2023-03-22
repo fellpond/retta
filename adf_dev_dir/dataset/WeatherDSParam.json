@@ -1,0 +1,26 @@
+{
+	"name": "WeatherDSParam",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WeatherAPIParam",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"location_key_param": {
+					"value": "@dataset().location_keyds_param",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"location_keyds_param": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "weather_datasets"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"schema": []
+	}
+}

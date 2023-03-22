@@ -1,0 +1,32 @@
+{
+	"name": "history_monthly",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"year": {
+				"type": "string",
+				"defaultValue": "2022"
+			}
+		},
+		"folder": {
+			"name": "energy_datasets/storage_ds"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@concat('history_monthly',dataset().year,'_',utcnow('yyyyMMdd'))",
+					"type": "Expression"
+				},
+				"folderPath": "energy_month_history/input",
+				"fileSystem": "bronze"
+			}
+		},
+		"schema": {}
+	}
+}

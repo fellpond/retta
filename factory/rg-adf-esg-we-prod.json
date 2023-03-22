@@ -1,0 +1,9 @@
+{
+	"name": "rg-adf-esg-we-prod",
+	"location": "westeurope",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "5b40784c-a68c-4391-9edb-cf4d1a72b230",
+		"tenantId": "6401860f-c606-4f47-8bfe-de913ce6b4c6"
+	}
+}

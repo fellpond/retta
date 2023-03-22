@@ -1,0 +1,108 @@
+{
+	"name": "active_meters",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data1",
+				"description": "Save active meters in datalake.",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "metryDS",
+						"type": "DatasetReference",
+						"parameters": {
+							"endpoint": {
+								"value": "@concat('meters?','box=',pipeline().parameters.box,'&','limit=',pipeline().parameters.limit)",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "active_meters_stg",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "save active_meters",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Copy data1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://adb-1558361433928880.0.azuredatabricks.net/api/2.0/jobs/run-now",
+					"method": "POST",
+					"headers": {
+						"Authorization": "Bearer dapifd3996d8d885aab04c7cbd3d7f09de32-2"
+					},
+					"body": {
+						"job_id": 470567759038934
+					}
+				}
+			}
+		],
+		"parameters": {
+			"box": {
+				"type": "string",
+				"defaultValue": "active"
+			},
+			"limit": {
+				"type": "string",
+				"defaultValue": "10000"
+			},
+			"Waitsec": {
+				"type": "int",
+				"defaultValue": 10
+			}
+		},
+		"folder": {
+			"name": "energy_pipelines"
+		},
+		"annotations": []
+	}
+}

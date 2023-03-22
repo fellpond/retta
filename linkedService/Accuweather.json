@@ -1,0 +1,13 @@
+{
+	"name": "Accuweather",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"type": "RestService",
+		"annotations": [],
+		"typeProperties": {
+			"url": "http://dataservice.accuweather.com/currentconditions/v1/",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		}
+	}
+}

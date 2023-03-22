@@ -1,0 +1,22 @@
+{
+	"name": "metryIntg",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://app.metry.io/api/v2/",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous",
+			"authHeaders": {
+				"Authorization": {
+					"type": "AzureKeyVaultSecret",
+					"store": {
+						"referenceName": "AzureKeyVaultRetta",
+						"type": "LinkedServiceReference"
+					},
+					"secretName": "metritoken"
+				}
+			}
+		}
+	}
+}

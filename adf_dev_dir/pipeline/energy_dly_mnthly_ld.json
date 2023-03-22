@@ -1,0 +1,164 @@
+{
+	"name": "energy_dly_mnthly_ld",
+	"properties": {
+		"activities": [
+			{
+				"name": "Extract daily and monthly data",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "metryDS",
+						"type": "DatasetReference",
+						"parameters": {
+							"endpoint": "meters"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "energy_dly_mnthly",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Parse Transform and Load",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Extract daily and monthly data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Repos/prayank.sharma@routadigital.com/retta/energy_dly_scripts/energy_dly_seq"
+				},
+				"linkedServiceName": {
+					"referenceName": "RettaDBrcks",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Email_Notifier1",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Parse Transform and Load",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Email_Notifier",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"EmailTo": "prayank.sharma@routadigital.com",
+						"Activity": {
+							"value": "@concat(pipeline().Pipeline, ' : Databricks ETL')",
+							"type": "Expression"
+						},
+						"ErrorMessage": {
+							"value": "@activity('Parse Transform and Load').output",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Emailm Notifier",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Extract daily and monthly data",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Email_Notifier",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"EmailTo": {
+							"value": "@pipeline().parameters.email",
+							"type": "Expression"
+						},
+						"Activity": {
+							"value": "@concat(pipeline()?.TriggeredByPipelineName, ' : Metri API Rest Call')",
+							"type": "Expression"
+						},
+						"ErrorMessage": {
+							"value": "@activity('Extract daily and monthly data').output.errors[0].Message",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"email": {
+				"type": "string",
+				"defaultValue": "prayank.sharma@routadigital.com"
+			}
+		},
+		"variables": {
+			"test": {
+				"type": "String",
+				"defaultValue": "1"
+			}
+		},
+		"folder": {
+			"name": "energy_pipelines"
+		},
+		"annotations": []
+	}
+}
